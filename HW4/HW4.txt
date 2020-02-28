@@ -1,0 +1,40 @@
+Part 3-
+
+1. select Title from Titles where Author = “<Author>”;
+2. select i.Serial from Inventory i natural join Titles t where t.Author = "<Author>";
+3. select t.Title from Patrons p natural join CheckedOut natural join Inventory natural join Titles t where p.Name = "<Patron’s name>";
+4. elect p.Phone from Patrons natural join Phones p natural join CheckedOut natural join Inventory natural join Titles t where t.Title = "<Title>";
+
+Part 4-
+
+1. select t.Title from Titles t natural join Inventory i order by i.Serial limit <N>;
+2. select p.Name from Patrons p natural join CheckedOut c order by c.Serial desc limit 1;
+3. select p.Phone from Phones p where not exists (select c.Serial from CheckedOut c where p.CardNum = c.CardNum);
+4. select distinct ISBN, Title from Inventory natural join Titles;
+
+Part 5-
+
+1. select p.Name from CheckedOut c natural join Patrons p group by c.CardNum order by count(*) desc limit 1;
+2. select Author from Titles group by Author having count(*) > 1;
+3. select Author from Inventory natural join Titles group by Author having count(*) > 1;
+4. select Name, count(Serial) as NumCheckedOut, case when count(Serial) > 2 then "Platinum" when count(Serial) = 2 then "Gold" when count(Serial) = 1 then "Silver" when count(Serial) = 0 then "Bronze" end as Loyalty from Patrons natural left join CheckedOut group by Name;
+
+Part 6- 
+
+1. delete CheckedOut from CheckedOut natural join Patrons where Name = "<Name>";
+2. insert ignore into CheckedOut Values( (select CardNum from Patrons where Name = "<Patron’s Name>"),  (select Serial from Inventory i natural join Titles where not exists (select * from CheckedOut c where i.Serial = c.Serial) and Title = "<Title>" limit 1));
+3. delete from CheckedOut;
+   delete from Inventory;
+   delete from Titles;
+   delete from Phones;
+   delete from Patrons;
+   
+Part 7- 
+
+1. select Name from Players where Elo > 2850;
+2. select distinct Name from Players join Games where pID = WhitePlayer;
+3. select distinct Name from Players join Games where pID = WhitePlayer and Result = 'W';
+4. select distinct p.Name from Players p join Games g join Events e where (pID = WhitePlayer or pID = BlackPlayer) and g.eID = e.eID and year(Date) = 2018;
+5. select Name, Date from Games natural join Events where (WhitePlayer = (select pID from Players where Name = "Carlsen, Magnus") and Result = 'B') or (BlackPlayer = (select pID from Players where Name = "Carlsen, Magnus") and Result = 'W');
+6. select distinct p.Name from Games g join Players p where (g.WhitePlayer = (select pID from Players where Name = "Carlsen, Magnus") and g.BlackPlayer = p.pID) or (g.BlackPlayer = (select pID from Players where Name = "Carlsen, Magnus") and g.WhitePlayer = p.pID);
+7. select Name from Players where pID not in (select WhitePlayer as pID from Games where Result = 'B') and pID not in (select BlackPlayer as pID from Games where Result = 'W');
