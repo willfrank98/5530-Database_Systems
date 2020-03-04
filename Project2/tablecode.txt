@@ -1,0 +1,123 @@
+2.
+create table Students (
+	uID char(8) not null,
+	FirstName varchar(100) not null,
+	LastName varchar(100) not null,
+	BirthDate Date not null,
+	Major varchar(4) not null,
+	primary key (uID),
+	foreign key (Major) references Departments(SubjectAbbr)
+);
+
+3.
+create table Professors (
+	uID char(8) not null,
+	FirstName varchar(100) not null,
+	LastName varchar(100) not null,
+	BirthDate Date not null,
+	Department varchar(4) not null,
+	primary key (uID),
+	foreign key (Department) references Departments(SubjectAbbr)
+);
+
+4.
+create table Administrators (
+	uID char(8) not null,
+	FirstName varchar(100) not null,
+	LastName varchar(100) not null,
+	BirthDate Date not null,
+	primary key (uID)
+);
+
+1.
+create table Departments (
+	Name varchar(100) not null,
+	SubjectAbbr varchar(4) not null,
+	primary key (SubjectAbbr)
+);
+
+5.
+create table Courses (
+	CourseID int unsigned not null auto_increment,
+	SubjectAbbr varchar(4) not null,
+	CourseNumber int(4) unsigned not null,
+	Name varchar(100) not null,
+	primary key (CourseID),
+	unique key (CourseNumber, SubjectAbbr),
+	foreign key (SubjectAbbr) references Departments(SubjectAbbr)
+);
+
+6.
+create table Classes (
+	ClassID int unsigned not null auto_increment,
+	CourseID int unsigned not null,
+	Semester varchar(10) not null,
+	Location varchar(100) not null,
+	Start Time not null,
+	End Time not null,
+	Professor char(8) not null,
+	primary key (ClassID),
+	unique key (CourseID, Semester),
+	foreign key (CourseID) references Courses(CourseID),
+	foreign key (Professor) references Professors(uID)
+);
+
+7.
+create table AssignmentCategories (
+	AssignCatID int unsigned not null auto_increment,
+	Name varchar(100) not null,
+	Weight int unsigned not null,
+	ClassID int unsigned not null,
+	primary key (AssignCatID),
+	unique key (AssignCatID, ClassID),
+	foreign key (ClassID) references Classes(ClassID)
+);
+
+8.
+create table Assignments (
+	AssignmentID int unsigned not null auto_increment,
+	AssignCatID int unsigned not null,
+	Name varchar(100) not null,
+	MaxPoints int unsigned not null,
+	Contents varchar(8192) not null,	
+	DueDate DateTime default null,
+	primary key (AssignmentID),
+	unique key (AssignmentID, AssignCatID),
+	foreign key (AssignCatID) references AssignmentCategories(AssignCatID)
+);
+
+9.
+create table Enrolled (
+	ClassID int unsigned not null,
+	uID char(8) not null,
+	Grade varchar(2) default null,
+	primary key (ClassID, uID),
+	foreign key (ClassID) references Classes(ClassID),
+	foreign key (uID) references Students(uID)
+);
+
+10.
+create table Submission (
+	AssignmentID int unsigned not null,
+	uID char(8) not null,
+	Score int unsigned default null,
+	Contents varchar(8192) not null,
+	Time DateTime not null,
+	primary key (AssignmentID, uID),
+	foreign key (AssignmentID) references Assignments(AssignmentID),
+	foreign key (uID) references Students(uID)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
