@@ -32,6 +32,7 @@ namespace ChessBrowser
       // TODO: Load and parse the PGN file
       //       We recommend creating separate libraries to represent chess data and load the file
 
+
       // Use this to tell the GUI's progress bar how many total work steps there are
       // For example, one iteration of your main upload loop could be one work step
       // SetNumWorkItems(...);
