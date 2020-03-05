@@ -13,6 +13,10 @@ namespace ChessBrowser
 		List<Event> events= new List<Event>();
 		List<Game> games = new List<Game>();
 
+		/// <summary>
+		/// Reads in a PGN file to local storage variables
+		/// </summary>
+		/// <param name="filepath">The path to the PGN file</param>
 		public void ReadPGN(string filepath)
 		{
 			// regex to get text between quotes
@@ -32,23 +36,31 @@ namespace ChessBrowser
 				{
 					// remove brackets
 					var line = lines[i].Substring(1, lines[i].Length - 2);
-					
-					if (line.StartsWith("Event")) 
+
+					if (line.StartsWith("EventDate"))
 					{
-						//currEvent.Name = line.Substring(7, line.Length - 9);
+						currEvent.Date = rgx.Match(line).Groups[1].Value;
+					}
+					else if (line.StartsWith("Event"))
+					{
 						currEvent.Name = rgx.Match(line).Groups[1].Value;
 					}
 					else if (line.StartsWith("Site"))
 					{
 						currEvent.Site = rgx.Match(line).Groups[1].Value;
 					}
-					else if (line.StartsWith("EventDate"))
-					{
-						currEvent.Date = rgx.Match(line).Groups[1].Value;
-					}
+					
 					else if (line.StartsWith("Round"))
 					{
 						currGame.Round = rgx.Match(line).Groups[1].Value;
+					}
+					else if (line.StartsWith("WhiteElo"))
+					{
+						whitePlayer.Elo = int.Parse(rgx.Match(line).Groups[1].Value);
+					}
+					else if (line.StartsWith("BlackElo"))
+					{
+						blackPlayer.Elo = int.Parse(rgx.Match(line).Groups[1].Value);
 					}
 					else if (line.StartsWith("White"))
 					{
@@ -79,22 +91,6 @@ namespace ChessBrowser
 
 						currGame.Result = result;
 					}
-					else if (line.StartsWith("WhiteElo"))
-					{
-						whitePlayer.Elo = int.Parse(rgx.Match(line).Value);
-					}
-					else if (line.StartsWith("BlackElo"))
-					{
-						blackPlayer.Elo = int.Parse(rgx.Match(line).Value);
-					}
-					//else if (line.StartsWith("ECO"))
-					//{
-
-					//}
-					//else if (line.StartsWith("Date"))
-					//{
-
-					//}
 					i++;
 				}
 				i++;
@@ -111,31 +107,36 @@ namespace ChessBrowser
 
 				events.Add(currEvent);
 				games.Add(currGame);
-
+				players.Add(whitePlayer);
+				players.Add(blackPlayer);
 				// check to see if whitePlayer already exist in current list and updates ELO if necessary
-				var tempPlayer = players.First(p => p.Name.Equals(whitePlayer.Name));
-				if (tempPlayer != null && tempPlayer.Elo < whitePlayer.Elo)
-				{
-					players.Where(p => p.Name.Equals(whitePlayer.Name)).First().Elo = whitePlayer.Elo;
-				}
-				else
-				{
-					players.Add(blackPlayer);
-				}
+				//var tempPlayer = players.First(p => p.Name.Equals(whitePlayer.Name));
+				//if (tempPlayer != null && tempPlayer.Elo < whitePlayer.Elo)
+				//{
+				//	players.Where(p => p.Name.Equals(whitePlayer.Name)).First().Elo = whitePlayer.Elo;
+				//}
+				//else
+				//{
+				//	players.Add(blackPlayer);
+				//}
 
-				// does the same for blackPlayer
-				tempPlayer = players.First(p => p.Name.Equals(blackPlayer.Name));
-				if (tempPlayer != null && tempPlayer.Elo < blackPlayer.Elo)
-				{
-					players.Where(p => p.Name.Equals(blackPlayer.Name)).First().Elo = blackPlayer.Elo;
-				}
-				else
-				{
-					players.Add(blackPlayer);
-				}
+				//// does the same for blackPlayer
+				//tempPlayer = players.First(p => p.Name.Equals(blackPlayer.Name));
+				//if (tempPlayer != null && tempPlayer.Elo < blackPlayer.Elo)
+				//{
+				//	players.Where(p => p.Name.Equals(blackPlayer.Name)).First().Elo = blackPlayer.Elo;
+				//}
+				//else
+				//{
+				//	players.Add(blackPlayer);
+				//}
 			}
 		}
 
+		/// <summary>
+		/// Returns the current number of work items (items to be added to the database)
+		/// </summary>
+		/// <returns></returns>
 		public int GetNumWorkItems()
 		{
 			return games.Count + events.Count + players.Count;
