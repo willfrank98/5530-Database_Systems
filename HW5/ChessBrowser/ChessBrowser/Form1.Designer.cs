@@ -45,10 +45,87 @@ namespace ChessBrowser
 					// Open a connection
 					conn.Open();
 
-					// TODO: iterate through your data and generate appropriate insert commands
+					// prepare commands to update Players table
+					var selectCmd = new MySqlCommand("select count(*) from Players where Name=@Name and Elo<@Elo;", conn);
+					selectCmd.Parameters.AddWithValue("@Name", "");
+					selectCmd.Parameters.AddWithValue("@Elo", 0);
 
-					// Use this to tell the GUI that one work step has completed:
-					// WorkStepCompleted();
+					var insertCmd = new MySqlCommand("insert ignore into Players(Name, Elo) values (@Name, @Elo);", conn);
+					insertCmd.Parameters.AddWithValue("@Name", "");
+					insertCmd.Parameters.AddWithValue("@Elo", 0);
+
+					var updateCmd = new MySqlCommand("update Players set Elo=@Elo where Name=@Name", conn);
+					updateCmd.Parameters.AddWithValue("@Name", "");
+					updateCmd.Parameters.AddWithValue("@Elo", 0);
+					
+					// iterate over players and insert them
+					foreach (var player in reader.GetPlayers())
+					{
+						selectCmd.Parameters["@Name"].Value = player.Name;
+						selectCmd.Parameters["@Elo"].Value = player.Elo;
+						var o = selectCmd.ExecuteScalar();
+						int count = int.Parse(o.ToString());
+
+						if (count > 0)
+						{
+							updateCmd.Parameters["@Name"].Value = player.Name;
+							updateCmd.Parameters["@Elo"].Value = player.Elo;
+							updateCmd.ExecuteNonQuery();
+						}
+						else
+						{
+							insertCmd.Parameters["@Name"].Value = player.Name;
+							insertCmd.Parameters["@Elo"].Value = player.Elo;
+							insertCmd.ExecuteNonQuery();
+						}
+
+						WorkStepCompleted();
+					}
+
+					// prepare commands to update Events table
+					insertCmd = new MySqlCommand("insert ignore into Events(Name, Site, Date) values (@Name, @Site, @Date);", conn);
+					insertCmd.Parameters.AddWithValue("@Name", "");
+					insertCmd.Parameters.AddWithValue("@Site", "");
+					insertCmd.Parameters.AddWithValue("@Date", "");
+
+					// iterate over events and insert them
+					foreach (var e in reader.GetEvents())
+					{
+						insertCmd.Parameters["@Name"].Value = e.Name;
+						insertCmd.Parameters["@Site"].Value = e.Site;
+						insertCmd.Parameters["@Date"].Value = e.Date;
+						insertCmd.ExecuteNonQuery();
+
+						WorkStepCompleted();
+					}
+
+					// prepare commands to update Games table
+					insertCmd = new MySqlCommand("insert ignore into Games values (@Round, @Result, @Moves, (select pID from Players where Name=@BlackPlayer), " 
+						+ "(select pID from Players where Name=@WhitePlayer), (select eID from Events where Name=@Name and Site=@Site and Date=@Date));", conn);
+					insertCmd.Parameters.AddWithValue("@Round", "");
+					insertCmd.Parameters.AddWithValue("@Result", "");
+					insertCmd.Parameters.AddWithValue("@Moves", "");
+					insertCmd.Parameters.AddWithValue("@BlackPlayer", "");
+					insertCmd.Parameters.AddWithValue("@WhitePlayer", "");
+					insertCmd.Parameters.AddWithValue("@Name", "");
+					insertCmd.Parameters.AddWithValue("@Site", "");
+					insertCmd.Parameters.AddWithValue("@Date", "");
+
+					// iterate over games and insert them
+					foreach (var game in reader.GetGames())
+					{
+						insertCmd.Parameters["@Round"].Value = game.Round;
+						insertCmd.Parameters["@Result"].Value = game.Result;
+						insertCmd.Parameters["@Moves"].Value = game.Moves;
+						insertCmd.Parameters["@BlackPlayer"].Value = game.BlackPlayer;
+						insertCmd.Parameters["@WhitePlayer"].Value = game.WhitePlayer;
+						insertCmd.Parameters["@Name"].Value = game.Name;
+						insertCmd.Parameters["@Site"].Value = game.Site;
+						insertCmd.Parameters["@Date"].Value = game.Date;
+						insertCmd.ExecuteNonQuery();
+
+						WorkStepCompleted();
+					}
 
 				}
 				catch (Exception e)
@@ -56,7 +133,6 @@ namespace ChessBrowser
 					Console.WriteLine(e.Message);
 				}
 			}
-
 		}
 
 
@@ -94,10 +170,62 @@ namespace ChessBrowser
 					// Open a connection
 					conn.Open();
 
-					// TODO: Generate and execute an SQL command,
-					//       then parse the results into an appropriate string
-					//       and return it.
-					//       Remember that the returned string must use \r\n newlines
+					var columns = "e.Name, Site, Date, wp.Name, wp.Elo, bp.Name, bp.Elo, Result" + (showMoves ? ", Moves" : "");
+					var mainQuery = "select " + columns + " from Games g natural join Events e join Players as wp on g.WhitePlayer = wp.pID join Players as bp on g.BlackPlayer = bp.pID";
+					var conditions = " where wp.Name like @White and bp.Name like @Black and Result like @Winner and Moves like @Moves";
+
+					if (useDate)
+					{
+						conditions += " and Date > @Start and Date < @End";
+					}
+
+					var fullQuery = mainQuery + conditions;
+					
+
+					var selectCmd = new MySqlCommand(fullQuery, conn);
+					selectCmd.Parameters.AddWithValue("@White", white == "" ? "%" : white);
+					selectCmd.Parameters.AddWithValue("@Black", black == "" ? "%" : black);
+					selectCmd.Parameters.AddWithValue("@Moves", opening == "" ? "%" : opening + "%");
+					if (useDate)
+					{
+						selectCmd.Parameters.AddWithValue("@Start", start);
+						selectCmd.Parameters.AddWithValue("@End", end);
+
+					}
+					switch (winner)
+					{
+						case "White":
+							selectCmd.Parameters.AddWithValue("@Winner", 'W');
+							break;
+						case "Black":
+							selectCmd.Parameters.AddWithValue("@Winner", 'B');
+							break;
+						case "Draw":
+							selectCmd.Parameters.AddWithValue("@Winner", 'D');
+							break;
+						case "":
+							selectCmd.Parameters.AddWithValue("@Winner", '%');
+							break;
+					}
+
+					var reader = selectCmd.ExecuteReader();
+
+					while (reader.Read())
+					{
+						parsedResult += "Event: " + reader.GetString(0) + "\r\n";
+						parsedResult += "Site: " + reader.GetString(1) + "\r\n";
+						parsedResult += "Date: " + reader.GetString(2) + "\r\n";
+						parsedResult += "White: " + reader.GetString(3) + " (" + reader.GetString(4) + ")\r\n";
+						parsedResult += "Black: " + reader.GetString(5) + " (" + reader.GetString(6) + ")\r\n";
+						parsedResult += "Result: " + reader.GetChar(7) + "\r\n";
+						if (showMoves)
+						{
+							parsedResult += "Moves: " + reader.GetString(8) + "\r\n";
+						}
+						parsedResult += "\r\n";
+
+						numRows++;
+					}
 				}
 				catch (Exception e)
 				{

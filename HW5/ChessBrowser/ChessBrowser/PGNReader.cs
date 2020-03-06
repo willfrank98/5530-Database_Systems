@@ -9,9 +9,9 @@ namespace ChessBrowser
 {
 	public class PGNReader
 	{
-		List<Player> players = new List<Player>();
-		List<Event> events= new List<Event>();
-		List<Game> games = new List<Game>();
+		private List<Player> players = new List<Player>();
+		private List<Event> events= new List<Event>();
+		private List<Game> games = new List<Game>();
 
 		/// <summary>
 		/// Reads in a PGN file to local storage variables
@@ -40,14 +40,17 @@ namespace ChessBrowser
 					if (line.StartsWith("EventDate"))
 					{
 						currEvent.Date = rgx.Match(line).Groups[1].Value;
+						currGame.Date = rgx.Match(line).Groups[1].Value;
 					}
 					else if (line.StartsWith("Event"))
 					{
 						currEvent.Name = rgx.Match(line).Groups[1].Value;
+						currGame.Name = rgx.Match(line).Groups[1].Value;
 					}
 					else if (line.StartsWith("Site"))
 					{
 						currEvent.Site = rgx.Match(line).Groups[1].Value;
+						currGame.Site = rgx.Match(line).Groups[1].Value;
 					}
 					
 					else if (line.StartsWith("Round"))
@@ -109,27 +112,6 @@ namespace ChessBrowser
 				games.Add(currGame);
 				players.Add(whitePlayer);
 				players.Add(blackPlayer);
-				// check to see if whitePlayer already exist in current list and updates ELO if necessary
-				//var tempPlayer = players.First(p => p.Name.Equals(whitePlayer.Name));
-				//if (tempPlayer != null && tempPlayer.Elo < whitePlayer.Elo)
-				//{
-				//	players.Where(p => p.Name.Equals(whitePlayer.Name)).First().Elo = whitePlayer.Elo;
-				//}
-				//else
-				//{
-				//	players.Add(blackPlayer);
-				//}
-
-				//// does the same for blackPlayer
-				//tempPlayer = players.First(p => p.Name.Equals(blackPlayer.Name));
-				//if (tempPlayer != null && tempPlayer.Elo < blackPlayer.Elo)
-				//{
-				//	players.Where(p => p.Name.Equals(blackPlayer.Name)).First().Elo = blackPlayer.Elo;
-				//}
-				//else
-				//{
-				//	players.Add(blackPlayer);
-				//}
 			}
 		}
 
@@ -141,27 +123,45 @@ namespace ChessBrowser
 		{
 			return games.Count + events.Count + players.Count;
 		}
+
+		public List<Player> GetPlayers()
+		{
+			return players;
+		}
+		
+		public List<Event> GetEvents()
+		{
+			return events;
+		}
+		
+		public List<Game> GetGames()
+		{
+			return games;
+		}
 	}
 
-	class Player 
+	public class Player 
 	{
 		public string Name;
 		public int Elo;
 	}
 
-	class Event 
+	public class Event 
 	{
 		public string Name;
 		public string Site;
 		public string Date;
 	}
-	class Game 
+	public class Game 
 	{
 		public string Round;
 		public char Result;
 		public string BlackPlayer;
 		public string WhitePlayer;
 		public string Moves;
+		public string Name;
+		public string Site;
+		public string Date;
 	}
 
 }
