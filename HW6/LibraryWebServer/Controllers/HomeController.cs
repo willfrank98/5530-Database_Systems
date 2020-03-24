@@ -33,7 +33,9 @@ namespace LibraryWebServer.Controllers
 			bool loginSuccessful = false;
 			using (var db = new Team55LibraryContext())
 			{
-				var query = from p in db.Patrons where p.CardNum == cardnum && p.Name == name select p.Name;
+				var query = from p in db.Patrons where p.CardNum == cardnum && p.Name == name
+							select p.Name;
+
 				if (query.Count() > 0)
 				{
 					loginSuccessful = true;
@@ -87,11 +89,16 @@ namespace LibraryWebServer.Controllers
 							from j2 in chkOut.DefaultIfEmpty()
 							join p in db.Patrons on j2.CardNum equals p.CardNum into final
 							from j3 in final.DefaultIfEmpty()
-							select new { t.Isbn, t.Title, t.Author, Serial = j2.Serial.ToString(), Name = j3 == null ? "" : j3.Name };
+							select new
+							{
+								t.Isbn,
+								t.Title,
+								t.Author, 
+								Serial = j2 == null ? null : (uint?) j2.Serial,
+								Name   = j3 == null ? "" : j3.Name
+							};
 
-				var json = query.ToArray();
-
-				return Json(json);
+				return Json(query.ToArray());
 			}
 		}
 
@@ -116,7 +123,12 @@ namespace LibraryWebServer.Controllers
 							join p in db.Patrons on j2.CardNum equals p.CardNum into final
 							from j3 in final.DefaultIfEmpty()
 							where j3.Name == user
-							select new { t.Title, t.Author, j1.Serial };
+							select new
+							{
+								t.Title,
+								t.Author,
+								j1.Serial
+							};
 
 				return Json(query.ToArray());
 			}
@@ -157,7 +169,15 @@ namespace LibraryWebServer.Controllers
 		[HttpPost]
 		public ActionResult ReturnBook(int serial)
 		{
+			uint userial = (uint)serial;
+			uint ucard = (uint)card;
+
 			// You may have to cast serial to a (uint)
+			using (Team55LibraryContext db = new Team55LibraryContext())
+			{
+				db.CheckedOut.Remove(new CheckedOut { CardNum = ucard, Serial = userial});
+				db.SaveChanges();
+			}
 
 			return Json(new { success = true });
 		}
