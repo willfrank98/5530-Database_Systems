@@ -80,7 +80,7 @@ namespace LibraryWebServer.Controllers
 		[HttpPost]
 		public ActionResult AllTitles()
 		{
-			using (var db = new Team55LibraryContext())
+			using (Team55LibraryContext db = new Team55LibraryContext())
 			{
 				var query = from t in db.Titles
 							join i in db.Inventory on t.Isbn equals i.Isbn into inv
@@ -94,7 +94,7 @@ namespace LibraryWebServer.Controllers
 								t.Isbn,
 								t.Title,
 								t.Author, 
-								Serial = j2 == null ? null : (uint?) j2.Serial,
+								Serial = j1 == null ? null : (uint?) j1.Serial,
 								Name   = j3 == null ? "" : j3.Name
 							};
 
@@ -149,7 +149,7 @@ namespace LibraryWebServer.Controllers
 			uint userial = (uint)serial;
 			uint ucard = (uint)card;
 
-			using (var db = new Team55LibraryContext())
+			using (Team55LibraryContext db = new Team55LibraryContext())
 			{
 				db.CheckedOut.Add(new CheckedOut { CardNum = ucard, Serial = userial });
 				db.SaveChanges();
