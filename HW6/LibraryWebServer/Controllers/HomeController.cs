@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using LibraryWebServer;
 using LibraryWebServer.Models;
 
+/// <summary>
+/// Tony Diep and Will Frank
+/// </summary>
 namespace LibraryWebServer.Controllers
 {
 	public class HomeController : Controller
