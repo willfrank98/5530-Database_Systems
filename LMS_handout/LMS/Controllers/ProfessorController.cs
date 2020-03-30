@@ -243,11 +243,25 @@ namespace LMS.Controllers
     /// "year" - The year part of the semester in which the class is taught
     /// </summary>
     /// <param name="uid">The professor's uid</param>
+	/// 
+	/// NOTE: This method is called when you are logged in as a professor
+	///		  and you click on "My Classes" 
+	/// 
     /// <returns>The JSON array</returns>
     public IActionResult GetMyClasses(string uid)
-    {     
+    {
+		var profClasses = from cla in db.Classes
+						  where cla.Professor == uid
+						  select new
+						  {
+								subject = cla.Course.SubjectAbbr,
+								number = cla.Course.CourseNumber,
+								name = cla.Course.Name,
+								season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
+								year = cla.Semester.Substring(cla.Semester.IndexOf(" "))
+						  };
 
-      return Json(null);
+		return Json(profClasses.ToArray());
     }
 
 

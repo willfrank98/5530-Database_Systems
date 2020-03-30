@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,8 +68,24 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetMyClasses(string uid)
     {
-   
-      return Json(null);
+		var classes = from en in db.Enrolled 
+					  join cla in db.Classes on en.ClassId equals cla.ClassId
+					  into enJoinCla 
+					  from clas in enJoinCla.DefaultIfEmpty()
+					  join cour in db.Courses on clas.CourseId equals cour.CourseId
+					  into courses 
+					  from c in courses.DefaultIfEmpty()
+					  select new
+					  {
+						 subject = c.SubjectAbbr,
+						 number = c.CourseNumber,
+						 name = c.Name,
+						 season = clas.Semester.Substring(0, clas.Semester.Length - clas.Semester.IndexOf(" ")),
+						 year = clas.Semester.Substring(clas.Semester.IndexOf(" ")),
+						 grade = en.Grade
+					  };
+
+		return Json(classes.ToArray());
     }
 
     /// <summary>
@@ -130,9 +147,34 @@ namespace LMS.Controllers
     /// <returns>A JSON object containing {success = {true/false},
 	/// false if the student is already enrolled in the Class.</returns>
     public IActionResult Enroll(string subject, int num, string season, int year, string uid)
-    {      
+    {
+		uint classID = 0;
 
-      return Json(new { success = false });
+		var allClasses = from cla in db.Classes
+						 join enr in db.Enrolled on cla.ClassId equals enr.ClassId
+						 into enrolled
+						 from en in enrolled.DefaultIfEmpty()
+						 where en.UId == uid
+						 select new
+						 {
+							 subject = cla.Course.SubjectAbbr,
+							 num = cla.Course.CourseNumber,
+							 season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
+							 year = cla.Semester.Substring(cla.Semester.IndexOf(" ")),
+							 uid = en.UId,
+							 classID = cla.ClassId
+						 };
+	   
+		if(allClasses.Count() > 0)
+		{
+			return Json(new { success = false });
+		}
+
+	    Enrolled enroll = new Enrolled { UId = uid, Grade = "--", ClassId = classID};
+		db.Add(enroll);
+		db.SaveChanges();
+
+		return Json(new { success = true });
     }
 
 

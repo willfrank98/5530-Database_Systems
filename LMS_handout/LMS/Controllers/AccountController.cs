@@ -16,6 +16,7 @@ using LMS.Models.AccountViewModels;
 using LMS.Services;
 using System.Runtime.CompilerServices;
 
+// For referencing LMSTester
 [assembly: InternalsVisibleTo("LMSTester")]
 
 namespace LMS.Controllers
@@ -496,6 +497,8 @@ namespace LMS.Controllers
 			admin.LastName = lName;
 			admin.BirthDate = DOB;
 			admin.UId = uID;
+
+			db.Administrators.Add(admin);
 		}
 		else if(role == "Professor")
 		{
@@ -504,6 +507,9 @@ namespace LMS.Controllers
 			professor.LastName = lName;
 			professor.BirthDate = DOB;
 			professor.UId = uID;
+			professor.Department = SubjectAbbrev;
+
+			db.Professors.Add(professor);
 		}
 		else if(role == "Student")
 		{
@@ -512,7 +518,12 @@ namespace LMS.Controllers
 			student.LastName = lName;
 			student.BirthDate = DOB;
 			student.UId = uID;
+			student.Major = SubjectAbbrev;
+
+			db.Students.Add(student);
 		}
+
+		db.SaveChanges();
 
 		return uID;
     }
@@ -520,8 +531,7 @@ namespace LMS.Controllers
     /*******End code to modify********/
 
 
-    
-
+   
     #region Helpers
 
     private void AddErrors(IdentityResult result)
@@ -549,7 +559,7 @@ namespace LMS.Controllers
 	/// </summary>
 	/// <param name="uID"></param>
 	/// <returns></returns>
-	private int ExtractUIDValue(String uID)
+	public static int ExtractUIDValue(String uID)
 	{
 		return int.Parse(uID.Substring(1));
 	}
@@ -561,30 +571,24 @@ namespace LMS.Controllers
 	private String GenerateUID()
 	{
 		string uID = "u";
-		int uNumValue = 0;
+		int uNumValue;
 
-		var allAdmins =     from a in db.Administrators
+		var allAdminIDs =     from a in db.Administrators
 						    select ExtractUIDValue(a.UId);
 
-		var allProfessors = from p in db.Professors
+		var allProfessorIDs = from p in db.Professors
 							select ExtractUIDValue(p.UId);
 
-		var allStudents =   from s in db.Students
+		var allStudentIDs =   from s in db.Students
 						    select ExtractUIDValue(s.UId);
 
-		List<int> userIDs = new List<int>();
-		userIDs.Union(allStudents);
-		userIDs.Union(allProfessors);
-		userIDs.Union(allAdmins);
+		List<int> userIDs = new List<int>((allStudentIDs).Union(allProfessorIDs).Union(allAdminIDs));
 
-		if(userIDs.Any())
-		{
-			uNumValue = userIDs.Max() + 1;
-		}
+		uNumValue = (userIDs.Any() ? userIDs.Max() + 1 : 1);
 
 		int numZeros = 7 - uNumValue.ToString().Length;
 
-		for(int i = 0; i < 7 - numZeros; i++)
+		for(int i = 0; i < numZeros; i++)
 		{
 			uID += "0";
 
@@ -593,7 +597,6 @@ namespace LMS.Controllers
 				uID += uNumValue;
 			}
 		}
-
 
 		return uID;
 	}
