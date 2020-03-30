@@ -14,6 +14,42 @@ namespace LibraryWebServer.Controllers
 {
 	public class HomeController : Controller
 	{
+		/// <summary>
+		/// Global database 
+		/// </summary>
+		protected Team55LibraryContext db;
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public HomeController()
+		{
+			db = new Team55LibraryContext();
+		}
+
+		/// <summary>
+		/// For mock database configuration
+		/// </summary>
+		/// <param name="ctx"></param>
+		public void UseTeam55LibraryContext(Team55LibraryContext ctx)
+		{
+			db = ctx;
+		}
+
+		/// <summary>
+		/// Disposable method for the database
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void Dispose(bool disposing)
+		{
+			if(disposing)
+			{
+				db.Dispose();
+			}
+
+			base.Dispose(disposing);
+		}
+
 		// WARNING:
 		// This very simple web server is designed to be as tiny and simple as possible
 		// This is NOT the way to save user data.
@@ -34,15 +70,13 @@ namespace LibraryWebServer.Controllers
 		public IActionResult CheckLogin(string name, int cardnum)
 		{
 			bool loginSuccessful = false;
-			using (var db = new Team55LibraryContext())
-			{
-				var query = from p in db.Patrons where p.CardNum == cardnum && p.Name == name
-							select p.Name;
 
-				if (query.Count() > 0)
-				{
-					loginSuccessful = true;
-				}
+			var query = from p in db.Patrons where p.CardNum == cardnum && p.Name == name
+						select p.Name;
+
+			if (query.Count() > 0)
+			{
+				loginSuccessful = true;
 			}
 
 			if (!loginSuccessful)
@@ -83,26 +117,23 @@ namespace LibraryWebServer.Controllers
 		[HttpPost]
 		public ActionResult AllTitles()
 		{
-			using (Team55LibraryContext db = new Team55LibraryContext())
-			{
-				var query = from t in db.Titles
-							join i in db.Inventory on t.Isbn equals i.Isbn into inv
-							from j1 in inv.DefaultIfEmpty()
-							join c in db.CheckedOut on j1.Serial equals c.Serial into chkOut
-							from j2 in chkOut.DefaultIfEmpty()
-							join p in db.Patrons on j2.CardNum equals p.CardNum into final
-							from j3 in final.DefaultIfEmpty()
-							select new
-							{
-								t.Isbn,
-								t.Title,
-								t.Author, 
-								Serial = j1 == null ? null : (uint?) j1.Serial,
-								Name   = j3 == null ? "" : j3.Name
-							};
+			var query = from t in db.Titles
+						join i in db.Inventory on t.Isbn equals i.Isbn into inv
+						from j1 in inv.DefaultIfEmpty()
+						join c in db.CheckedOut on j1.Serial equals c.Serial into chkOut
+						from j2 in chkOut.DefaultIfEmpty()
+						join p in db.Patrons on j2.CardNum equals p.CardNum into final
+						from j3 in final.DefaultIfEmpty()
+						select new
+						{
+							t.Isbn,
+							t.Title,
+							t.Author, 
+							Serial = j1 == null ? null : (uint?) j1.Serial,
+							Name   = j3 == null ? "" : j3.Name
+						};
 
-				return Json(query.ToArray());
-			}
+			return Json(query.ToArray());
 		}
 
 		/// <summary>
@@ -116,25 +147,22 @@ namespace LibraryWebServer.Controllers
 		[HttpPost]
 		public ActionResult ListMyBooks()
 		{
-			using (var db = new Team55LibraryContext())
-			{
-				var query = from t in db.Titles
-							join i in db.Inventory on t.Isbn equals i.Isbn into inv
-							from j1 in inv.DefaultIfEmpty()
-							join c in db.CheckedOut on j1.Serial equals c.Serial into chkOut
-							from j2 in chkOut.DefaultIfEmpty()
-							join p in db.Patrons on j2.CardNum equals p.CardNum into final
-							from j3 in final.DefaultIfEmpty()
-							where j3.Name == user
-							select new
-							{
-								t.Title,
-								t.Author,
-								j1.Serial
-							};
+			var query = from t in db.Titles
+						join i in db.Inventory on t.Isbn equals i.Isbn into inv
+						from j1 in inv.DefaultIfEmpty()
+						join c in db.CheckedOut on j1.Serial equals c.Serial into chkOut
+						from j2 in chkOut.DefaultIfEmpty()
+						join p in db.Patrons on j2.CardNum equals p.CardNum into final
+						from j3 in final.DefaultIfEmpty()
+						where j3.Name == user
+						select new
+						{
+							t.Title,
+							t.Author,
+							j1.Serial
+						};
 
-				return Json(query.ToArray());
-			}
+			return Json(query.ToArray());
 		}
 
 
@@ -152,11 +180,8 @@ namespace LibraryWebServer.Controllers
 			uint userial = (uint)serial;
 			uint ucard = (uint)card;
 
-			using (Team55LibraryContext db = new Team55LibraryContext())
-			{
-				db.CheckedOut.Add(new CheckedOut { CardNum = ucard, Serial = userial });
-				db.SaveChanges();
-			}
+			db.CheckedOut.Add(new CheckedOut { CardNum = ucard, Serial = userial });
+			db.SaveChanges();
 
 			return Json(new { success = true });
 		}
@@ -176,11 +201,8 @@ namespace LibraryWebServer.Controllers
 			uint ucard = (uint)card;
 
 			// You may have to cast serial to a (uint)
-			using (Team55LibraryContext db = new Team55LibraryContext())
-			{
-				db.CheckedOut.Remove(new CheckedOut { CardNum = ucard, Serial = userial});
-				db.SaveChanges();
-			}
+			db.CheckedOut.Remove(new CheckedOut { CardNum = ucard, Serial = userial});
+			db.SaveChanges();
 
 			return Json(new { success = true });
 		}
