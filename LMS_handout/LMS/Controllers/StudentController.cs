@@ -80,8 +80,8 @@ namespace LMS.Controllers
 						 subject = c.SubjectAbbr,
 						 number = c.CourseNumber,
 						 name = c.Name,
-						 season = clas.Semester.Substring(0, clas.Semester.Length - clas.Semester.IndexOf(" ")),
-						 year = clas.Semester.Substring(clas.Semester.IndexOf(" ")),
+						 season = ExtractSeason(clas.Semester),
+						 year = ExtractYear(clas.Semester),
 						 grade = en.Grade
 					  };
 
@@ -159,8 +159,8 @@ namespace LMS.Controllers
 						 {
 							 subject = cla.Course.SubjectAbbr,
 							 num = cla.Course.CourseNumber,
-							 season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
-							 year = cla.Semester.Substring(cla.Semester.IndexOf(" ")),
+							 season = ExtractSeason(cla.Semester),
+							 year = ExtractYear(cla.Semester),
 							 uid = en.UId,
 							 classID = cla.ClassId
 						 };

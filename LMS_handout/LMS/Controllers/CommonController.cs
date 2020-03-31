@@ -126,13 +126,13 @@ namespace LMS.Controllers
 							 cla.Course.CourseNumber == number
 							 select new
 							 {
-								season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
-								year = cla.Semester.Substring(cla.Semester.IndexOf(" ")),
+								season = ExtractSeason(cla.Semester),
+								year = ExtractYear(cla.Semester),
 								location = cla.Location,
 								start = cla.Start,
 								end = cla.End,
-								fName = cla.Professor.Substring(0, cla.Professor.Length - cla.Professor.IndexOf(" ")),
-								lname = cla.Professor.Substring(cla.Professor.IndexOf(" "))
+								fName = ExtractFirstName(cla.Professor),
+								lname = ExtractLastName(cla.Professor)
 							 };
 
 		return Json(classOfferings.ToArray());
@@ -163,8 +163,8 @@ namespace LMS.Controllers
 							 {
 								 subject = classes.ProfessorNavigation.Department,
 								 num = classes.Course.CourseNumber,
-								 season = classes.Semester.Substring(0, classes.Semester.Length - classes.Semester.IndexOf(" ")),
-								 year = classes.Semester.Substring(classes.Semester.IndexOf(" ")), 
+								 season = ExtractSeason(classes.Semester),
+								 year = ExtractYear(classes.Semester), 
 								 category = cat.Name, 
 								 asgname = assign.Name
 							 };
@@ -203,8 +203,8 @@ namespace LMS.Controllers
 							{
 								subject = classes.Course.SubjectAbbr,
 								num = classes.Course.CourseNumber,
-								season = classes.Semester.Substring(0, classes.Semester.Length - classes.Semester.IndexOf(" ")),
-								year = classes.Semester.Substring(classes.Semester.IndexOf(" ")),
+								season = ExtractSeason(classes.Semester),
+								year = ExtractYear(classes.Semester),
 								category = cat.Name,
 								asgname = assign.Name,
 								uid = sub.UId
@@ -279,9 +279,28 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	public static String ExtractYear(String semester)
 	{
-		return semester.Substring(semester.IndexOf(" "));
+		return semester.Substring(semester.IndexOf(" ") + 1);
 	}
 
+	/// <summary>
+	/// Helper for getting the first name of a user
+	/// </summary>
+	/// <param name="name"></param>
+	/// <returns></returns>
+	public static String ExtractFirstName(String name)
+	{
+		return name.Substring(0, name.Length - name.IndexOf(" ") + 1);
+	}
+
+	/// <summary>
+	/// Helper for getting the last name of a user
+	/// </summary>
+	/// <param name="name"></param>
+	/// <returns></returns>
+	public static String ExtractLastName(String name)
+	{
+		return name.Substring(name.IndexOf(" ") + 1);
+	}
 
     /*******End code to modify********/
 
