@@ -91,6 +91,8 @@ namespace LMS.Controllers
 								grade = en.Grade
 							};
 
+			var result = (classes as JsonResult).Value;
+
 			return Json(classes.ToArray());
 		}
 		catch(Exception e)
@@ -160,6 +162,7 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
+			Console.WriteLine(e.Message);
 			return Json(new { success = false });
 		}
     }
@@ -201,7 +204,7 @@ namespace LMS.Controllers
 				return Json(new { success = false });
 			}
 
-			Enrolled enroll = new Enrolled { UId = uid, Grade = "--", ClassId = classID };
+			Enrolled enroll = new Enrolled { UId = uid, Grade = ComputeGrade(uid), ClassId = classID };
 			db.Add(enroll);
 			db.SaveChanges();
 
@@ -209,6 +212,7 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
+			Console.WriteLine(e.Message);
 			return Json(new { success = false });
 		}
     }
@@ -230,15 +234,32 @@ namespace LMS.Controllers
     {     
 		try
 		{
-			return Json(null);
+			if(ComputeGrade(uid) == "--")
+			{
+				return Json(0.0);
+			}
+
+			//TODO: Replace
+			return Json(4.0);
 		}
 		catch(Exception e)
 		{
-			return Json(e.Message);
+			Console.WriteLine(e.Message);
+			return Json(0.0);
 		}
     }
 
-    /*******End code to modify********/
+	/// <summary>
+	/// Helper for computing the grade for the class the student is in 
+	/// </summary>
+	/// <param name="assignments"></param>
+	/// <returns></returns>
+	private String ComputeGrade(string uid)
+	{
+		return "--";
+	}
+
+	/*******End code to modify********/
 
   }
 }

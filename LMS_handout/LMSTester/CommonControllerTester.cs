@@ -7,6 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
+/// <summary>
+/// A collection of xUnit tests for the following controllers:
+/// 
+/// - AdministratorController
+/// - CommonController
+/// - ProfessorController
+/// - StudentController
+/// 
+/// </summary>
 namespace LMSTester
 {
 	public class CommonControllerTester

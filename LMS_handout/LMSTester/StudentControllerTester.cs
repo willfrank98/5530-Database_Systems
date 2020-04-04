@@ -7,6 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
+/// <summary>
+/// A collection of xUnit tests for the following controllers:
+/// 
+/// - AdministratorController
+/// - CommonController
+/// - ProfessorController
+/// - StudentController
+/// 
+/// </summary>
 namespace LMSTester
 {
 	public class StudentControllerTester
@@ -123,15 +132,17 @@ namespace LMSTester
 			Team55LMSContext db = MakeMyClassesForStudent();
 			student.UseLMSContext(db);
 
+			student.Enroll("CS", 4000, "Spring", 2021, "u0000004");
+			student.Enroll("CS", 5530, "Spring", 2021, "u0000004");
+
 			var classes = from enr in db.Enrolled
 						  join cla in db.Classes on enr.ClassId equals cla.ClassId
 						  into allClasses
 						  from cl in allClasses.DefaultIfEmpty()
 						  where enr.UId == "u0000004"
 						  select cl;
-
+		
 			var result = student.GetMyClasses("u0000004") as JsonResult;
-			var value = result.Value;
 
 			Assert.Equal(2, classes.Count());
 		}
@@ -181,7 +192,7 @@ namespace LMSTester
 			Team55LMSContext db = MakeTinyCatalog();
 			student.UseLMSContext(db);
 
-			student.Enroll("LING", 1069, "Fall", 2020, "u0000003");
+			var result = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
 
 			var query = from en in db.Enrolled
 						join cl in db.Classes on en.ClassId equals cl.ClassId
@@ -191,7 +202,8 @@ namespace LMSTester
 						&& c.Semester == "Fall 2020"
 						select en;
 
-			Assert.Equal(1, query.Count());
+			Assert.Equal("{ success = True }", result.Value.ToString());
+			//Assert.Equal(1, query.Count());
 		}
 
 		/// <summary>
@@ -218,7 +230,7 @@ namespace LMSTester
 						select en;
 
 			Assert.Equal(1, query.Count());
-			Assert.Equal("new { success = False }", result.ToString());
+			Assert.Equal("{ success = False }", result.Value.ToString());
 		}
 	}
 }

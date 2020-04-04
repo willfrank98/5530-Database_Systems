@@ -116,7 +116,6 @@ namespace LMS.Controllers
 		}
 
 
-
 		/// <summary>
 		/// Returns a JSON array with all the assignments in an assignment category for a class.
 		/// If the "category" parameter is null, return all assignments in the class.
@@ -270,6 +269,7 @@ namespace LMS.Controllers
 			}
 			catch(Exception e)
 			{
+				Console.WriteLine(e.Message);
 				return Json(new { success = false });
 			}
 		}
