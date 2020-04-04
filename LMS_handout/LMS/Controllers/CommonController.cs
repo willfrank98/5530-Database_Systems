@@ -57,14 +57,21 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetDepartments()
     {
-		var query = from d in db.Departments
-					select new
-					{
-						name = d.Name, 
-						subject = d.SubjectAbbr
-					};
+		try
+		{
+			var query = from d in db.Departments
+						select new
+						{
+							name = d.Name,
+							subject = d.SubjectAbbr
+						};
 
-		return Json(query.ToArray());
+			return Json(query.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
 
@@ -85,24 +92,31 @@ namespace LMS.Controllers
 	/// <returns>The JSON array</returns>
 	public IActionResult GetCatalog()
 	{
-		var catalog = from depart in db.Departments
-					  join course in db.Courses on depart.SubjectAbbr equals course.SubjectAbbr
-					  into departCourse 
-					  from dep in departCourse.DefaultIfEmpty()
-					  select new
-					  {
-						  depart.Name,
-						  depart.SubjectAbbr,
-						  courses = from c in db.Courses
-									where c.SubjectAbbr == depart.SubjectAbbr
-									select new
-									{
-										c.CourseNumber,
-										c.Name
-									}
-					  };
+		try
+		{
+			var catalog = from depart in db.Departments
+							join course in db.Courses on depart.SubjectAbbr equals course.SubjectAbbr
+							into departCourse
+							from dep in departCourse.DefaultIfEmpty()
+							select new
+							{
+								depart.Name,
+								depart.SubjectAbbr,
+								courses = from c in db.Courses
+										  where c.SubjectAbbr == depart.SubjectAbbr
+										  select new
+										  {
+											  c.CourseNumber,
+											  c.Name
+										  }
+							};
 
-		return Json(catalog.ToArray());
+			return Json(catalog.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
 	}
 
     /// <summary>
@@ -121,21 +135,28 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetClassOfferings(string subject, int number)
     {
-		var classOfferings = from cla in db.Classes
-							 where cla.Course.SubjectAbbr == subject &&
-							 cla.Course.CourseNumber == number
-							 select new
-							 {
-								season = ExtractSeason(cla.Semester),
-								year = ExtractYear(cla.Semester),
-								location = cla.Location,
-								start = cla.Start,
-								end = cla.End,
-								fName = ExtractFirstName(cla.Professor),
-								lname = ExtractLastName(cla.Professor)
-							 };
+		try
+		{
+			var classOfferings = from cla in db.Classes
+									where cla.Course.SubjectAbbr == subject &&
+									cla.Course.CourseNumber == number
+									select new
+									{
+										season = ExtractSeason(cla.Semester),
+										year = ExtractYear(cla.Semester),
+										location = cla.Location,
+										start = cla.Start,
+										end = cla.End,
+										fName = ExtractFirstName(cla.Professor),
+										lname = ExtractLastName(cla.Professor)
+									};
 
-		return Json(classOfferings.ToArray());
+			return Json(classOfferings.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
     /// <summary>
@@ -152,24 +173,31 @@ namespace LMS.Controllers
     /// <returns>The assignment contents</returns>
     public IActionResult GetAssignmentContents(string subject, int num, string season, int year, string category, string asgname)
     {
-		var assignContents = from assign in db.Assignments
-							 join asgCat in db.AssignmentCategories on assign.AssignCatId equals asgCat.AssignCatId
-							 into assignJoinCat
-							 from cat in assignJoinCat.DefaultIfEmpty()
-							 join cla in db.Classes on cat.ClassId equals cla.ClassId
-							 into catJoinClasses
-							 from classes in catJoinClasses.DefaultIfEmpty()
-							 select new
-							 {
-								 subject = classes.ProfessorNavigation.Department,
-								 num = classes.Course.CourseNumber,
-								 season = ExtractSeason(classes.Semester),
-								 year = ExtractYear(classes.Semester), 
-								 category = cat.Name, 
-								 asgname = assign.Name
-							 };
+		try
+		{
+			var assignContents = from assign in db.Assignments
+								 join asgCat in db.AssignmentCategories on assign.AssignCatId equals asgCat.AssignCatId
+								 into assignJoinCat
+								 from cat in assignJoinCat.DefaultIfEmpty()
+								 join cla in db.Classes on cat.ClassId equals cla.ClassId
+								 into catJoinClasses
+								 from classes in catJoinClasses.DefaultIfEmpty()
+								 select new
+								 {
+									 subject = classes.ProfessorNavigation.Department,
+									 num = classes.Course.CourseNumber,
+									 season = ExtractSeason(classes.Semester),
+									 year = ExtractYear(classes.Semester),
+									 category = cat.Name,
+									 asgname = assign.Name
+								 };
 
-        return Content(assignContents.ToString());
+			return Content(assignContents.ToString());
+		}
+		catch(Exception e)
+		{
+			return Content(e.Message);
+		}
     }
 
 
@@ -189,33 +217,40 @@ namespace LMS.Controllers
     /// <returns>The submission text</returns>
     public IActionResult GetSubmissionText(string subject, int num, string season, int year, string category, string asgname, string uid)
     {
-       var submissionText = from sub in db.Submission
-							join a in db.Assignments on sub.AssignmentId equals a.AssignmentId
-							into subsJoinAssign
-							from assign in subsJoinAssign.DefaultIfEmpty()
-							join asgCat in db.AssignmentCategories on assign.AssignCatId equals asgCat.AssignCatId
-							into assignJoinCat
-							from cat in assignJoinCat.DefaultIfEmpty()
-							join cla in db.Classes on cat.ClassId equals cla.ClassId
-							into catJoinClasses
-							from classes in catJoinClasses.DefaultIfEmpty()
-							select new
-							{
-								subject = classes.Course.SubjectAbbr,
-								num = classes.Course.CourseNumber,
-								season = ExtractSeason(classes.Semester),
-								year = ExtractYear(classes.Semester),
-								category = cat.Name,
-								asgname = assign.Name,
-								uid = sub.UId
-							};
-
-		if(submissionText != null)
+		try
 		{
-			return Content(submissionText.ToString());
-		}
+			var submissionText = from sub in db.Submission
+								 join a in db.Assignments on sub.AssignmentId equals a.AssignmentId
+								 into subsJoinAssign
+								 from assign in subsJoinAssign.DefaultIfEmpty()
+								 join asgCat in db.AssignmentCategories on assign.AssignCatId equals asgCat.AssignCatId
+								 into assignJoinCat
+								 from cat in assignJoinCat.DefaultIfEmpty()
+								 join cla in db.Classes on cat.ClassId equals cla.ClassId
+								 into catJoinClasses
+								 from classes in catJoinClasses.DefaultIfEmpty()
+								 select new
+								 {
+									 subject = classes.Course.SubjectAbbr,
+									 num = classes.Course.CourseNumber,
+									 season = ExtractSeason(classes.Semester),
+									 year = ExtractYear(classes.Semester),
+									 category = cat.Name,
+									 asgname = assign.Name,
+									 uid = sub.UId
+								 };
 
-		return Content("");
+			if (submissionText != null)
+			{
+				return Content(submissionText.ToString());
+			}
+
+			return Content("");
+		}
+		catch(Exception e)
+		{
+			return Content(e.Message);
+		}
     }
 
 

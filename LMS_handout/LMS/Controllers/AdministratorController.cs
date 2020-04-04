@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using LMS.Models.LMSModels;
 
 // For referencing LMSTester
 [assembly: InternalsVisibleTo("AdministratorControllerTester")]
 
 namespace LMS.Controllers
 {
-  [Authorize(Roles = "Administrator")]
+	[Authorize(Roles = "Administrator")]
   public class AdministratorController : CommonController
   {
     public IActionResult Index()
@@ -45,14 +44,22 @@ namespace LMS.Controllers
     /// <returns>The JSON result</returns>
     public IActionResult GetCourses(string subject)
     {
-		var allCourses = from co in db.Courses where co.SubjectAbbr == subject
-						 select new
-						 {
-							number = co.CourseNumber, 
-							name = co.Name
-						 };
-      
-        return Json(allCourses.ToArray());
+		try
+		{
+			var allCourses = from co in db.Courses
+								where co.SubjectAbbr == subject
+								select new
+								{
+									number = co.CourseNumber,
+									name = co.Name
+								};
+
+			return Json(allCourses.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
 
@@ -68,19 +75,27 @@ namespace LMS.Controllers
     /// <returns>The JSON result</returns>
     public IActionResult GetProfessors(string subject)
     {
-		var professors = from p in db.Professors
-						 join d in db.Departments on p.Department equals d.SubjectAbbr
-						 into subjects
+		try
+		{
+			var professors = from p in db.Professors
+							 join d in db.Departments on p.Department equals d.SubjectAbbr
+							 into subjects
 
-						 from sub in subjects.DefaultIfEmpty() where p.Department == subject
-						 select new
-						 {
-							 lName = p.LastName,
-							 fName = p.FirstName,
-							 uid = p.UId
-						 };
+							 from sub in subjects.DefaultIfEmpty()
+							 where p.Department == subject
+							 select new
+							 {
+								lName = p.LastName,
+								fName = p.FirstName,
+								uid = p.UId
+							 };
 
-		return Json(professors.ToArray());
+			return Json(professors.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
 
@@ -96,41 +111,50 @@ namespace LMS.Controllers
 	/// false if the Course already exists.</returns>
     public IActionResult CreateCourse(string subject, int number, string name)
     {
-		Courses course = new Courses {SubjectAbbr = subject, CourseNumber = (uint) number, Name = name };
-
-		var courseDuplicates = from c in db.Courses
-					  where c.SubjectAbbr == subject && c.CourseNumber == number 
-					  && c.Name == name
-					  select c;
-
-		if(courseDuplicates.Any())
+		try
 		{
-			return Json(new { success = false });
+			Courses course = new Courses { SubjectAbbr = subject, CourseNumber = (uint)number, Name = name };
+
+			var courseDuplicates = from c in db.Courses
+								   where c.SubjectAbbr == subject && c.CourseNumber == number
+								   && c.Name == name
+								   select c;
+
+			if (courseDuplicates.Any())
+			{
+				return Json(new { success = false });
+			}
+
+			db.Courses.Add(course);
+			db.SaveChanges();
+
+			return Json(new { success = true });
 		}
-
-		db.Courses.Add(course);
-		db.SaveChanges();
-
-        return Json(new { success = true });
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
 
-		/// <summary>
-		/// Creates a class offering of a given course.
-		/// </summary>
-		/// <param name="subject">The department subject abbreviation</param>
-		/// <param name="number">The course number</param>
-		/// <param name="season">The season part of the semester</param>
-		/// <param name="year">The year part of the semester</param>
-		/// <param name="start">The start time</param>
-		/// <param name="end">The end time</param>
-		/// <param name="location">The location</param>
-		/// <param name="instructor">The uid of the professor</param>
-		/// <returns>A JSON object containing {success = true/false}. 
-		/// false if another class occupies the same location during any time 
-		/// within the start-end range in the same semester, or if there is already
-		/// a Class offering of the same Course in the same Semester.</returns>
-		public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
+	/// <summary>
+	/// Creates a class offering of a given course.
+	/// </summary>
+	/// <param name="subject">The department subject abbreviation</param>
+	/// <param name="number">The course number</param>
+	/// <param name="season">The season part of the semester</param>
+	/// <param name="year">The year part of the semester</param>
+	/// <param name="start">The start time</param>
+	/// <param name="end">The end time</param>
+	/// <param name="location">The location</param>
+	/// <param name="instructor">The uid of the professor</param>
+	/// <returns>A JSON object containing {success = true/false}. 
+	/// false if another class occupies the same location during any time 
+	/// within the start-end range in the same semester, or if there is already
+	/// a Class offering of the same Course in the same Semester.</returns>
+	public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
+	{
+		try
 		{
 			Classes newClass = new Classes
 			{
@@ -143,7 +167,7 @@ namespace LMS.Controllers
 			};
 
 			var allClasses = from cla in db.Classes
-							 select cla;
+								select cla;
 
 			if (allClasses.Count() > 0)
 			{
@@ -159,7 +183,12 @@ namespace LMS.Controllers
 			db.SaveChanges();
 
 			return Json(new { success = true });
-    }
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
+	}
 
 	/// <summary>
 	/// Verifies if a class contains the same location as the current

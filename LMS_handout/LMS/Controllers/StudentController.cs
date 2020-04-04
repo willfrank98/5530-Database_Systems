@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.CompilerServices;
+
+// For referencing LMSTester
+[assembly: InternalsVisibleTo("LMSTester")]
 
 namespace LMS.Controllers
 {
@@ -68,24 +72,31 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetMyClasses(string uid)
     {
-		var classes = from en in db.Enrolled 
-					  join cla in db.Classes on en.ClassId equals cla.ClassId
-					  into enJoinCla 
-					  from clas in enJoinCla.DefaultIfEmpty()
-					  join cour in db.Courses on clas.CourseId equals cour.CourseId
-					  into courses 
-					  from c in courses.DefaultIfEmpty()
-					  select new
-					  {
-						 subject = c.SubjectAbbr,
-						 number = c.CourseNumber,
-						 name = c.Name,
-						 season = ExtractSeason(clas.Semester),
-						 year = ExtractYear(clas.Semester),
-						 grade = en.Grade
-					  };
+		try
+		{
+			var classes = from en in db.Enrolled
+							join cla in db.Classes on en.ClassId equals cla.ClassId
+							into enJoinCla
+							from clas in enJoinCla.DefaultIfEmpty()
+							join cour in db.Courses on clas.CourseId equals cour.CourseId
+							into courses
+							from c in courses.DefaultIfEmpty()
+							select new
+							{
+								subject = c.SubjectAbbr,
+								number = c.CourseNumber,
+								name = c.Name,
+								season = ExtractSeason(clas.Semester),
+								year = ExtractYear(clas.Semester),
+								grade = en.Grade
+							};
 
-		return Json(classes.ToArray());
+			return Json(classes.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
     /// <summary>
@@ -104,10 +115,18 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
     {     
+		try
+		{
+			var query = from cla in db.Classes
+						select cla;
 
-      return Json(null);
+			return Json(query.ToArray());
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
-
 
 
     /// <summary>
@@ -131,8 +150,18 @@ namespace LMS.Controllers
     public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, 
       string category, string asgname, string uid, string contents)
     {
-     
-      return Json(new { success = false });
+		try
+		{
+			var query = from asCat in db.AssignmentCategories
+						select asCat;
+
+
+			return Json(new { success = true });
+		}
+		catch(Exception e)
+		{
+			return Json(new { success = false });
+		}
     }
 
     
@@ -148,33 +177,40 @@ namespace LMS.Controllers
 	/// false if the student is already enrolled in the Class.</returns>
     public IActionResult Enroll(string subject, int num, string season, int year, string uid)
     {
-		uint classID = 0;
+		try
+		{
+			uint classID = 0;
 
-		var allClasses = from cla in db.Classes
-						 join enr in db.Enrolled on cla.ClassId equals enr.ClassId
-						 into enrolled
-						 from en in enrolled.DefaultIfEmpty()
-						 where en.UId == uid
-						 select new
-						 {
-							 subject = cla.Course.SubjectAbbr,
-							 num = cla.Course.CourseNumber,
-							 season = ExtractSeason(cla.Semester),
-							 year = ExtractYear(cla.Semester),
-							 uid = en.UId,
-							 classID = cla.ClassId
-						 };
-	   
-		if(allClasses.Count() > 0)
+			var allClasses = from cla in db.Classes
+							 join enr in db.Enrolled on cla.ClassId equals enr.ClassId
+							 into enrolled
+							 from en in enrolled.DefaultIfEmpty()
+							 where en.UId == uid
+							 select new
+							 {
+								subject = cla.Course.SubjectAbbr,
+								num = cla.Course.CourseNumber,
+								season = ExtractSeason(cla.Semester),
+								year = ExtractYear(cla.Semester),
+								uid = en.UId,
+								classID = cla.ClassId
+							};
+
+			if (allClasses.Count() > 0)
+			{
+				return Json(new { success = false });
+			}
+
+			Enrolled enroll = new Enrolled { UId = uid, Grade = "--", ClassId = classID };
+			db.Add(enroll);
+			db.SaveChanges();
+
+			return Json(new { success = true });
+		}
+		catch(Exception e)
 		{
 			return Json(new { success = false });
 		}
-
-	    Enrolled enroll = new Enrolled { UId = uid, Grade = "--", ClassId = classID};
-		db.Add(enroll);
-		db.SaveChanges();
-
-		return Json(new { success = true });
     }
 
 
@@ -192,8 +228,14 @@ namespace LMS.Controllers
     /// <returns>A JSON object containing a single field called "gpa" with the number value</returns>
     public IActionResult GetGPA(string uid)
     {     
-
-      return Json(null);
+		try
+		{
+			return Json(null);
+		}
+		catch(Exception e)
+		{
+			return Json(e.Message);
+		}
     }
 
     /*******End code to modify********/

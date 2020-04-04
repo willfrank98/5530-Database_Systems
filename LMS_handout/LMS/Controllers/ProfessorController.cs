@@ -105,8 +105,14 @@ namespace LMS.Controllers
 		/// <returns>The JSON array</returns>
 		public IActionResult GetStudentsInClass(string subject, int num, string season, int year)
 		{
-
-			return Json(null);
+			try
+			{
+				return Json(null);
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 
@@ -129,8 +135,14 @@ namespace LMS.Controllers
 		/// <returns>The JSON array</returns>
 		public IActionResult GetAssignmentsInCategory(string subject, int num, string season, int year, string category)
 		{
-
-			return Json(null);
+			try
+			{
+				return Json(null);
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 
@@ -148,8 +160,14 @@ namespace LMS.Controllers
 		/// <returns>The JSON array</returns>
 		public IActionResult GetAssignmentCategories(string subject, int num, string season, int year)
 		{
-
-			return Json(null);
+			try
+			{
+				return Json(null);
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 		/// <summary>
@@ -165,8 +183,14 @@ namespace LMS.Controllers
 		///	false if an assignment category with the same name already exists in the same class.</returns>
 		public IActionResult CreateAssignmentCategory(string subject, int num, string season, int year, string category, int catweight)
 		{
-
-			return Json(new { success = false });
+			try
+			{
+				return Json(new { success = false });
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 		/// <summary>
@@ -185,8 +209,14 @@ namespace LMS.Controllers
 		/// false if an assignment with the same name already exists in the same assignment category.</returns>
 		public IActionResult CreateAssignment(string subject, int num, string season, int year, string category, string asgname, int asgpoints, DateTime asgdue, string asgcontents)
 		{
-
-			return Json(new { success = false });
+			try
+			{
+				return Json(new { success = false });
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 
@@ -209,8 +239,14 @@ namespace LMS.Controllers
 		/// <returns>The JSON array</returns>
 		public IActionResult GetSubmissionsToAssignment(string subject, int num, string season, int year, string category, string asgname)
 		{
-
-			return Json(null);
+			try
+			{
+				return Json(null);
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 
@@ -228,8 +264,14 @@ namespace LMS.Controllers
 		/// <returns>A JSON object containing success = true/false</returns>
 		public IActionResult GradeSubmission(string subject, int num, string season, int year, string category, string asgname, string uid, int score)
 		{
-
-			return Json(new { success = true });
+			try
+			{
+				return Json(new { success = true });
+			}
+			catch(Exception e)
+			{
+				return Json(new { success = false });
+			}
 		}
 
 
@@ -250,18 +292,25 @@ namespace LMS.Controllers
 		/// <returns>The JSON array</returns>
 		public IActionResult GetMyClasses(string uid)
 		{
-			var profClasses = from cla in db.Classes
-							  where cla.Professor == uid
-							  select new
-							  {
-								  subject = cla.Course.SubjectAbbr,
-								  number = cla.Course.CourseNumber,
-								  name = cla.Course.Name,
-								  season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
-								  year = cla.Semester.Substring(cla.Semester.IndexOf(" "))
-							  };
+			try
+			{
+				var profClasses = from cla in db.Classes
+								  where cla.Professor == uid
+								  select new
+								  {
+									  subject = cla.Course.SubjectAbbr,
+									  number = cla.Course.CourseNumber,
+									  name = cla.Course.Name,
+									  season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
+									  year = cla.Semester.Substring(cla.Semester.IndexOf(" "))
+								  };
 
-			return Json(profClasses.ToArray());
+				return Json(profClasses.ToArray());
+			}
+			catch(Exception e)
+			{
+				return Json(e.Message);
+			}
 		}
 
 
