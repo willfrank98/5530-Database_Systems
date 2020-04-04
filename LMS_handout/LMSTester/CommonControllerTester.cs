@@ -72,6 +72,18 @@ namespace LMSTester
 			return db;
 		}
 
-		
+		/// <summary>
+		/// Verifies that all of the departments are listed
+		/// </summary>
+		[Fact]
+		public void CanGetDepartments()
+		{
+			CommonController common = new CommonController();
+			Team55LMSContext db = MakeDepartments();
+			common.UseLMSContext(db);
+
+			var departments = common.GetDepartments() as JsonResult;
+			var value = departments.Value;
+		}
 	}
 }

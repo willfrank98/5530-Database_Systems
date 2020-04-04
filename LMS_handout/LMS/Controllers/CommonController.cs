@@ -95,21 +95,18 @@ namespace LMS.Controllers
 		try
 		{
 			var catalog = from depart in db.Departments
-							join course in db.Courses on depart.SubjectAbbr equals course.SubjectAbbr
-							into departCourse
-							from dep in departCourse.DefaultIfEmpty()
-							select new
-							{
-								depart.Name,
-								depart.SubjectAbbr,
-								courses = from c in db.Courses
-										  where c.SubjectAbbr == depart.SubjectAbbr
-										  select new
-										  {
-											  c.CourseNumber,
-											  c.Name
-										  }
-							};
+						  select new
+						  {
+							  subject = depart.Name,
+							  dname = depart.SubjectAbbr,
+							  courses = from c in db.Courses
+										where c.SubjectAbbr == depart.SubjectAbbr
+									    select new
+									    {
+										    number = c.CourseNumber,
+										    cName = c.Name
+									    }
+						  };
 
 			return Json(catalog.ToArray());
 		}
@@ -138,18 +135,18 @@ namespace LMS.Controllers
 		try
 		{
 			var classOfferings = from cla in db.Classes
-									where cla.Course.SubjectAbbr == subject &&
-									cla.Course.CourseNumber == number
-									select new
-									{
-										season = ExtractSeason(cla.Semester),
-										year = ExtractYear(cla.Semester),
-										location = cla.Location,
-										start = cla.Start,
-										end = cla.End,
-										fName = ExtractFirstName(cla.Professor),
-										lname = ExtractLastName(cla.Professor)
-									};
+								 where cla.Course.SubjectAbbr == subject
+								 && cla.Course.CourseNumber == number
+								 select new
+								 {
+									 season = ExtractSeason(cla.Semester),
+									 year = ExtractYear(cla.Semester),
+									 location = cla.Location,
+									 start = cla.Start,
+									 end = cla.End,
+									 fName = cla.ProfessorNavigation.FirstName,
+									 lname = cla.ProfessorNavigation.LastName
+								};
 
 			return Json(classOfferings.ToArray());
 		}
@@ -272,29 +269,49 @@ namespace LMS.Controllers
     /// </returns>
     public IActionResult GetUser(string uid)
     {
-		var student = from stu in db.Students where stu.UId == uid
-					  select stu.Major;
+		var student = from stu in db.Students
+					  where stu.UId == uid
+					  select new
+					  {
+						  fname = stu.FirstName,
+						  lname = stu.LastName,
+						  uid = stu.UId,
+						  major = stu.Major
+					  };
 
 		var professor = from pro in db.Professors
 						where pro.UId == uid
-						select pro.Department;
+						select new
+						{
+							fname = pro.FirstName,
+							lname = pro.LastName,
+							uid = pro.UId,
+							department = pro.Department
+						};
 
 		var admin = from adm in db.Administrators
 					where adm.UId == uid
-					select adm.UId;
+					select new
+					{
+						fname = adm.FirstName,
+						lname = adm.LastName,
+						uid = adm.UId
+					};
 
-		if(student.Count() > 0)
+		if(student != null)
 		{
-			return Json(student);
+			return Json(student.FirstOrDefault());
 		}
-		else if(professor.Count() > 0)
+		else if(professor != null)
 		{
-			return Json(professor);
+			return Json(professor.FirstOrDefault());
 		}
-		else
+		else if(admin != null)
 		{
-			return Json(new { success = false });
+			return Json(professor.FirstOrDefault());
 		}
+
+		return Json(new { success = false });
     }
 
 	/// <summary>
@@ -315,26 +332,6 @@ namespace LMS.Controllers
 	public static String ExtractYear(String semester)
 	{
 		return semester.Substring(semester.IndexOf(" ") + 1);
-	}
-
-	/// <summary>
-	/// Helper for getting the first name of a user
-	/// </summary>
-	/// <param name="name"></param>
-	/// <returns></returns>
-	public static String ExtractFirstName(String name)
-	{
-		return name.Substring(0, name.Length - name.IndexOf(" ") + 1);
-	}
-
-	/// <summary>
-	/// Helper for getting the last name of a user
-	/// </summary>
-	/// <param name="name"></param>
-	/// <returns></returns>
-	public static String ExtractLastName(String name)
-	{
-		return name.Substring(name.IndexOf(" ") + 1);
 	}
 
     /*******End code to modify********/

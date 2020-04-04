@@ -91,7 +91,10 @@ namespace LMS.Controllers
 								grade = en.Grade
 							};
 
-			var result = (classes as JsonResult).Value;
+			if (classes.Count() == 0)
+			{
+
+			}		
 
 			return Json(classes.ToArray());
 		}
@@ -182,29 +185,22 @@ namespace LMS.Controllers
     {
 		try
 		{
-			uint classID = 0;
-
-			var allClasses = from cla in db.Classes
-							 join enr in db.Enrolled on cla.ClassId equals enr.ClassId
-							 into enrolled
-							 from en in enrolled.DefaultIfEmpty()
-							 where en.UId == uid
+			var getClassId = from cla in db.Classes
+							 where cla.Semester == season + " " + year.ToString()
+							 && cla.Course.CourseNumber == num
+							 && cla.Course.SubjectAbbr == subject
 							 select new
 							 {
-								subject = cla.Course.SubjectAbbr,
-								num = cla.Course.CourseNumber,
-								season = ExtractSeason(cla.Semester),
-								year = ExtractYear(cla.Semester),
-								uid = en.UId,
-								classID = cla.ClassId
-							};
+								cla.ClassId
+							 };
 
-			if (allClasses.Count() > 0)
+			Enrolled enroll = new Enrolled
 			{
-				return Json(new { success = false });
-			}
+				UId = uid,
+				Grade = ComputeGrade(uid),
+				ClassId = getClassId.FirstOrDefault().ClassId
+			};
 
-			Enrolled enroll = new Enrolled { UId = uid, Grade = ComputeGrade(uid), ClassId = classID };
 			db.Add(enroll);
 			db.SaveChanges();
 

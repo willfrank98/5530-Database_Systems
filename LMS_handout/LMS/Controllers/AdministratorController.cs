@@ -47,12 +47,12 @@ namespace LMS.Controllers
 		try
 		{
 			var allCourses = from co in db.Courses
-								where co.SubjectAbbr == subject
-								select new
-								{
-									number = co.CourseNumber,
-									name = co.Name
-								};
+							 where co.SubjectAbbr == subject
+							 select new
+							 {
+								  number = co.CourseNumber,
+								  name = co.Name
+							 };
 
 			return Json(allCourses.ToArray());
 		}
@@ -113,26 +113,22 @@ namespace LMS.Controllers
     {
 		try
 		{
-			Courses course = new Courses { SubjectAbbr = subject, CourseNumber = (uint)number, Name = name };
-
-			var courseDuplicates = from c in db.Courses
-								   where c.SubjectAbbr == subject && c.CourseNumber == number
-								   && c.Name == name
-								   select c;
-
-			if (courseDuplicates.Any())
+			Courses course = new Courses
 			{
-				return Json(new { success = false });
-			}
+				SubjectAbbr = subject,
+				CourseNumber = (uint)number,
+				Name = name
+			};
 
 			db.Courses.Add(course);
 			db.SaveChanges();
 
 			return Json(new { success = true });
 		}
-		catch(Exception e)
+		// For handling a duplicate course
+		catch(Exception)
 		{
-			return Json(e.Message);
+			return Json(new { success = false });
 		}
     }
 
