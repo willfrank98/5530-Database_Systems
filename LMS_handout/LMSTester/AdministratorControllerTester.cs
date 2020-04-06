@@ -39,7 +39,7 @@ namespace LMSTester
 		private Team55LMSContext ConfigureDatabaseNoData()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("empty_database").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
@@ -53,7 +53,7 @@ namespace LMSTester
 		private Team55LMSContext MakeDepartments()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("departments").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
@@ -73,10 +73,92 @@ namespace LMSTester
 		}
 
 		/// <summary>
+		/// Helper for configuring a database to have a few courses
+		/// </summary>
+		/// <returns></returns>
+		private Team55LMSContext MakeCourses()
+		{
+			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
+			optionsBuilder.UseInMemoryDatabase("courses").UseApplicationServiceProvider(NewServiceProvider());
+
+			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
+
+			Courses computerSystems = new Courses
+			{
+				CourseId = 1,
+				SubjectAbbr = "CS",
+				CourseNumber = 4400,
+				Name = "Computer Systems"
+			};
+
+			Courses deepLearning = new Courses
+			{
+				CourseId = 12,
+				SubjectAbbr = "CS",
+				CourseNumber = 5955,
+				Name = "Deep Learning"
+			};
+
+			Courses programmingLanguages = new Courses
+			{
+				CourseId = 24,
+				SubjectAbbr = "CS",
+				CourseNumber = 3520,
+				Name = "Programming Languages"
+			};
+
+			Courses beginnerSpanish = new Courses
+			{
+				CourseId = 354,
+				SubjectAbbr = "SPAN",
+				CourseNumber = 1010,
+				Name = "Beginner Spanish I"
+			};
+
+			Courses beginnerSpanish2 = new Courses
+			{
+				CourseId = 411,
+				SubjectAbbr = "SPAN",
+				CourseNumber = 1020,
+				Name = "Beginner Spanish II"
+			};
+
+			Courses americanHistory = new Courses
+			{
+				CourseId = 533,
+				SubjectAbbr = "HIST",
+				CourseNumber = 1700,
+				Name = "American History"
+			};
+
+			Courses econHistory = new Courses
+			{
+				CourseId = 600,
+				SubjectAbbr = "HIST",
+				CourseNumber = 1500,
+				Name = "History of Economy"
+			};
+
+			db.Courses.Add(computerSystems);
+			db.Courses.Add(deepLearning);
+			db.Courses.Add(programmingLanguages);
+
+			db.Courses.Add(beginnerSpanish);
+			db.Courses.Add(beginnerSpanish2);
+
+			db.Courses.Add(americanHistory);
+			db.Courses.Add(econHistory);
+
+			db.SaveChanges();
+
+			return db;
+		}
+
+		/// <summary>
 		/// Verifies that a course has been successfully added
 		/// </summary>
 		[Fact]
-		public void CanGetCourse()
+		public void CanGetOneCourse()
 		{
 			AdministratorController admin = new AdministratorController();
 			Team55LMSContext db = ConfigureDatabaseNoData();
@@ -92,6 +174,76 @@ namespace LMSTester
 
 			Assert.True(query.ToArray().Length == 1);
 			Assert.Equal("{ number = 1010, name = Beginner Russian I }", result[0].ToString());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator gets all courses for one specific 
+		/// department (i.e. Spanish (SPAN))
+		/// </summary>
+		[Fact]
+		public void CanGetMultipleCoursesForSpanishDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeCourses();
+			admin.UseLMSContext(db);
+
+			var courses = admin.GetCourses("SPAN") as JsonResult;
+			dynamic results = courses.Value;
+
+			var spanishCourses = from co in db.Courses
+								 where co.SubjectAbbr == "SPAN"
+								 select co;
+
+			Assert.Equal(2, spanishCourses.Count());
+			Assert.Equal("{ number = 1010, name = Beginner Spanish I }", results[0].ToString());
+			Assert.Equal("{ number = 1020, name = Beginner Spanish II }", results[1].ToString());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator gets all courses for one specific 
+		/// department (i.e. Computer Science (CS))
+		/// </summary>
+		[Fact]
+		public void CanGetMultipleDepartmentsForCSDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeCourses();
+			admin.UseLMSContext(db);
+
+			var courses = admin.GetCourses("CS") as JsonResult;
+			dynamic results = courses.Value;
+
+			var spanishCourses = from co in db.Courses
+								 where co.SubjectAbbr == "CS"
+								 select co;
+
+			Assert.Equal(3, spanishCourses.Count());
+			Assert.Equal("{ number = 4400, name = Computer Systems }", results[0].ToString());
+			Assert.Equal("{ number = 5955, name = Deep Learning }", results[1].ToString());
+			Assert.Equal("{ number = 3520, name = Programming Languages }", results[2].ToString());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator gets all courses for one specific 
+		/// department (i.e. History (HIST))
+		/// </summary>
+		[Fact]
+		public void CanGetMultipleDepartmentsForHistoryDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeCourses();
+			admin.UseLMSContext(db);
+
+			var courses = admin.GetCourses("HIST") as JsonResult;
+			dynamic results = courses.Value;
+
+			var spanishCourses = from co in db.Courses
+								 where co.SubjectAbbr == "HIST"
+								 select co;
+
+			Assert.Equal(2, spanishCourses.Count());
+			Assert.Equal("{ number = 1700, name = American History }", results[0].ToString());
+			Assert.Equal("{ number = 1500, name = History of Economy }", results[1].ToString());
 		}
 
 		/// <summary>
@@ -178,12 +330,13 @@ namespace LMSTester
 			DateTime start = new DateTime(2020, 8, 24, 10, 45, 0);
 			DateTime end = new DateTime(2020, 8, 24, 11, 35, 0);
 
-			admin.CreateClass("LING", 1069, "Fall", 2020, start, end, "LNCO 1104", "Elena Khordova");
+			var result = admin.CreateClass("LING", 1069, "Fall", 2020, start, end, "LNCO 1104", "Elena Khordova") as JsonResult;
 
 			var query = from cl in db.Classes
 						select cl;
 
 			Assert.Equal(1, query.Count());
+			Assert.Equal("{ success = True }", result.Value.ToString());
 		}
 
 		/// <summary>
