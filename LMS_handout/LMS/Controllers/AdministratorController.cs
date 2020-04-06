@@ -90,7 +90,7 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
-			return Json(new{ success = false });
+			return Json(e.Message);
 		}
     }
 

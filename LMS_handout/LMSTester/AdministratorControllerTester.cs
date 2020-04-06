@@ -155,6 +155,82 @@ namespace LMSTester
 		}
 
 		/// <summary>
+		/// Helper for configuring the database to have professors
+		/// </summary>
+		/// <returns></returns>
+		private Team55LMSContext MakeProfessors()
+		{
+			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
+			optionsBuilder.UseInMemoryDatabase("professors").UseApplicationServiceProvider(NewServiceProvider());
+
+			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
+
+			Professors kopta = new Professors
+			{
+				BirthDate = DateTime.Parse("01/01/1983"),
+				Department = "CS",
+				FirstName = "Daniel",
+				LastName = "Kopta",
+				UId = "u0000001"
+			};
+
+			Professors randall = new Professors
+			{
+				BirthDate = DateTime.Parse("04/03/1950"),
+				Department = "LING",
+				FirstName = "Randall",
+				LastName = "Eggert",
+				UId = "u0000002"
+			};
+
+			Professors nathan = new Professors
+			{
+				BirthDate = DateTime.Parse("02/08/1949"),
+				Department = "LING",
+				FirstName = "Nathan",
+				LastName = "Paul Vooge",
+				UId = "u0000003"
+			};
+
+			Professors kelly = new Professors
+			{
+				BirthDate = DateTime.Parse("05/01/1954"),
+				Department = "MATH",
+				FirstName = "Kelly",
+				LastName = "McArthur",
+				UId = "u0000004"
+			};
+
+			Professors matthew = new Professors
+			{
+				BirthDate = DateTime.Parse("07/08/1982"),
+				Department = "MATH",
+				FirstName = "Matthew",
+				LastName = "Cecil",
+				UId = "u0000005"
+			};
+
+			Professors ashley = new Professors
+			{
+				BirthDate = DateTime.Parse("06/13/1987"),
+				Department = "MATH",
+				FirstName = "Ashley",
+				LastName = "Rowland",
+				UId = "u0000006"
+			};
+
+			db.Professors.Add(kopta);
+			db.Professors.Add(randall);
+			db.Professors.Add(kelly);
+			db.Professors.Add(nathan);
+			db.Professors.Add(matthew);
+			db.Professors.Add(ashley);
+			db.SaveChanges();
+
+			return db;
+		}
+
+		/// <summary>
 		/// Verifies that a course has been successfully added
 		/// </summary>
 		[Fact]
@@ -417,6 +493,75 @@ namespace LMSTester
 
 			Assert.Equal("{ success = False }", result.ToString());
 			Assert.Equal(1, classes.Count());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator can get the one professor from CS
+		/// department
+		/// </summary>
+		[Fact]
+		public void CanGetProfessorInCSDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeProfessors();
+			admin.UseLMSContext(db);
+
+			var professors = admin.GetProfessors("CS") as JsonResult;
+			dynamic result = professors.Value;
+
+			var csProfessors = from pro in db.Professors
+								  where pro.Department == "CS"
+								  select pro;
+
+			Assert.Equal("{ lName = Kopta, fName = Daniel, uid = u0000001 }", result[0].ToString());
+			Assert.Equal(1, csProfessors.Count());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator can get the two professors from the Lingustics
+		/// department
+		/// </summary>
+		[Fact]
+		public void CanGetProfessorsInLinguisticsDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeProfessors();
+			admin.UseLMSContext(db);
+
+			var professors = admin.GetProfessors("LING") as JsonResult;
+			dynamic result = professors.Value;
+
+			var lingProfessors = from pro in db.Professors
+								    where pro.Department == "LING"
+								    select pro;
+
+			Assert.Equal("{ lName = Eggert, fName = Randall, uid = u0000002 }", result[0].ToString());
+			Assert.Equal("{ lName = Paul Vooge, fName = Nathan, uid = u0000003 }", result[1].ToString());
+			Assert.Equal(2, lingProfessors.Count());
+		}
+
+		/// <summary>
+		/// Verifies that an administrator can get the two professors from the Mathematics
+		/// department
+		/// </summary>
+		[Fact]
+		public void CanGetProfessorsInMathematicsDepartment()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = MakeProfessors();
+			admin.UseLMSContext(db);
+
+			var professors = admin.GetProfessors("MATH") as JsonResult;
+			dynamic result = professors.Value;
+
+			var mathProfessors = from pro in db.Professors
+								 where pro.Department == "MATH"
+								 select pro;
+
+			Assert.Equal("{ lName = McArthur, fName = Kelly, uid = u0000004 }", result[0].ToString());
+			Assert.Equal("{ lName = Cecil, fName = Matthew, uid = u0000005 }", result[1].ToString());
+			Assert.Equal("{ lName = Rowland, fName = Ashley, uid = u0000006 }", result[2].ToString());
+			Assert.Equal(3, mathProfessors.Count());
 		}
 	}
 }
