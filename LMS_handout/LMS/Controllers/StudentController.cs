@@ -75,26 +75,21 @@ namespace LMS.Controllers
 		try
 		{
 			var classes = from en in db.Enrolled
-							join cla in db.Classes on en.ClassId equals cla.ClassId
-							into enJoinCla
-							from clas in enJoinCla.DefaultIfEmpty()
-							join cour in db.Courses on clas.CourseId equals cour.CourseId
-							into courses
-							from c in courses.DefaultIfEmpty()
-							select new
-							{
-								subject = c.SubjectAbbr,
-								number = c.CourseNumber,
-								name = c.Name,
-								season = ExtractSeason(clas.Semester),
-								year = ExtractYear(clas.Semester),
-								grade = en.Grade
-							};
-
-			if (classes.Count() == 0)
-			{
-
-			}		
+						  join cla in db.Classes on en.ClassId equals cla.ClassId
+						  into enJoinCla
+						  from clas in enJoinCla.DefaultIfEmpty()
+						  join cour in db.Courses on clas.CourseId equals cour.CourseId
+						  into courses
+						  from c in courses.DefaultIfEmpty()
+						  select new
+						  {
+							  subject = c.SubjectAbbr,
+							  number = c.CourseNumber,
+							  name = c.Name,
+							  season = ExtractSeason(clas.Semester),
+							  year = ExtractYear(clas.Semester),
+							  grade = en.Grade
+						  };	
 
 			return Json(classes.ToArray());
 		}

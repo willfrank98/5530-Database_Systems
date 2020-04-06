@@ -194,16 +194,7 @@ namespace LMSTester
 
 			var result = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
 
-			var query = from en in db.Enrolled
-						join cl in db.Classes on en.ClassId equals cl.ClassId
-						into classes 
-						from c in classes.DefaultIfEmpty()
-						where c.CourseId == 1069 && c.Professor == "u0000003"
-						&& c.Semester == "Fall 2020"
-						select en;
-
 			Assert.Equal("{ success = True }", result.Value.ToString());
-			//Assert.Equal(1, query.Count());
 		}
 
 		/// <summary>

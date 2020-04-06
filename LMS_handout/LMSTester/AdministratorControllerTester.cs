@@ -76,7 +76,7 @@ namespace LMSTester
 		/// Verifies that a course has been successfully added
 		/// </summary>
 		[Fact]
-		public void TestGetCourse()
+		public void CanGetCourse()
 		{
 			AdministratorController admin = new AdministratorController();
 			Team55LMSContext db = ConfigureDatabaseNoData();
@@ -98,18 +98,35 @@ namespace LMSTester
 		/// Verifies that creating one class is successful
 		/// </summary>
 		[Fact]
-		public void CanCreateCourse()
+		public void CanCreateOneCourse()
 		{
 			AdministratorController admin = new AdministratorController();
 			Team55LMSContext db = ConfigureDatabaseNoData();
 			admin.UseLMSContext(db);
 
-			admin.CreateCourse("CHEM", 1210, "Organic Chemistry I");
+			var result = admin.CreateCourse("CHEM", 1210, "Organic Chemistry I") as JsonResult;
 
-			var courses = from co in db.Courses
-						  select co;
+			Assert.Equal("{ success = True }", result.Value.ToString());
+		}
 
-			Assert.Equal(1, courses.Count());
+		/// <summary>
+		/// Verifies that an administrator is able to create multiple unique courses
+		/// successfully
+		/// </summary>
+		[Fact]
+		public void CanCreateMultipleUniqueCourses()
+		{
+			AdministratorController admin = new AdministratorController();
+			Team55LMSContext db = ConfigureDatabaseNoData();
+			admin.UseLMSContext(db);
+
+			var databases = admin.CreateCourse("CS", 5530, "Database Systems") as JsonResult;
+			var begRussian = admin.CreateCourse("RUSS", 1010, "Beginner Russian") as JsonResult;
+			var interWriting = admin.CreateCourse("WRTG", 2010, "Intermediate Writing") as JsonResult;
+
+			Assert.Equal("{ success = True }", databases.Value.ToString());
+			Assert.Equal("{ success = True }", begRussian.Value.ToString());
+			Assert.Equal("{ success = True }", interWriting.Value.ToString());
 		}
 
 		/// <summary>
@@ -124,12 +141,11 @@ namespace LMSTester
 
 			admin.CreateCourse("ESSF", 1710, "Elem Hip-Hop Dance");
 			var duplicateCourse = admin.CreateCourse("ESSF", 1710, "Elem Hip-Hop Dance") as JsonResult;
-			dynamic result = duplicateCourse.Value;
 
 			var courses = from co in db.Courses
 						  select co;
 
-			Assert.Equal("{ success = False }", result.ToString());
+			Assert.Equal("{ success = False }", duplicateCourse.Value.ToString());
 			Assert.Equal(1, courses.Count());
 		}
 

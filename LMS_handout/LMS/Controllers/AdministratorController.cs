@@ -78,23 +78,19 @@ namespace LMS.Controllers
 		try
 		{
 			var professors = from p in db.Professors
-							 join d in db.Departments on p.Department equals d.SubjectAbbr
-							 into subjects
-
-							 from sub in subjects.DefaultIfEmpty()
 							 where p.Department == subject
 							 select new
 							 {
-								lName = p.LastName,
-								fName = p.FirstName,
-								uid = p.UId
+								  lName = p.LastName,
+								  fName = p.FirstName,
+								  uid = p.UId
 							 };
 
 			return Json(professors.ToArray());
 		}
 		catch(Exception e)
 		{
-			return Json(e.Message);
+			return Json(new{ success = false });
 		}
     }
 
@@ -120,12 +116,19 @@ namespace LMS.Controllers
 				Name = name
 			};
 
+			var courses = from co in db.Courses
+						  select co;
+
+			if(CourseAlreadyExists(subject, number, name))
+			{
+				return Json(new { success = false });
+			}
+
 			db.Courses.Add(course);
 			db.SaveChanges();
 
 			return Json(new { success = true });
 		}
-		// For handling a duplicate course
 		catch(Exception)
 		{
 			return Json(new { success = false });
@@ -159,11 +162,11 @@ namespace LMS.Controllers
 				Location = location,
 				Start = start.TimeOfDay,
 				End = end.TimeOfDay,
-				Professor = instructor,
+				Professor = instructor
 			};
 
 			var allClasses = from cla in db.Classes
-								select cla;
+							 select cla;
 
 			if (allClasses.Count() > 0)
 			{
@@ -180,9 +183,9 @@ namespace LMS.Controllers
 
 			return Json(new { success = true });
 		}
-		catch(Exception e)
+		catch(Exception)
 		{
-			return Json(e.Message);
+			return Json(new { success = false });
 		}
 	}
 
@@ -225,6 +228,28 @@ namespace LMS.Controllers
 			bool isSameCourse = newClass.Course == c.Course;
 
 			if(isSameSemester && isSameCourse)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Helper for determining if a course is already in the catalog; this 
+	/// will prevent an administrator from creating duplicate courses
+	/// </summary>
+	/// <param name="subject"></param>
+	/// <param name="number"></param>
+	/// <param name="name"></param>
+	/// <returns></returns>
+	private bool CourseAlreadyExists(String subject, int number, String name)
+	{
+		foreach(Courses c in db.Courses)
+		{
+			if(c.SubjectAbbr == subject &&
+				c.CourseNumber == number && c.Name == name)
 			{
 				return true;
 			}

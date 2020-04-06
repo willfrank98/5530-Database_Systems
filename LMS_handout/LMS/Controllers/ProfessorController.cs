@@ -188,7 +188,8 @@ namespace LMS.Controllers
 			}
 			catch(Exception e)
 			{
-				return Json(e.Message);
+				Console.WriteLine(e.Message);
+				return Json(new { success = false });
 			}
 		}
 
@@ -301,8 +302,8 @@ namespace LMS.Controllers
 									  subject = cla.Course.SubjectAbbr,
 									  number = cla.Course.CourseNumber,
 									  name = cla.Course.Name,
-									  season = cla.Semester.Substring(0, cla.Semester.Length - cla.Semester.IndexOf(" ")),
-									  year = cla.Semester.Substring(cla.Semester.IndexOf(" "))
+									  season = ExtractSeason(cla.Semester),
+									  year = ExtractYear(cla.Semester)
 								  };
 
 				return Json(profClasses.ToArray());
