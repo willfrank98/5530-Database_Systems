@@ -144,7 +144,7 @@ namespace LMS.Controllers
 									 location = cla.Location,
 									 start = cla.Start,
 									 end = cla.End,
-									 fName = cla.ProfessorNavigation.FirstName,
+									 fname = cla.ProfessorNavigation.FirstName,
 									 lname = cla.ProfessorNavigation.LastName
 								};
 

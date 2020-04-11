@@ -167,6 +167,51 @@ namespace LMSTester
 		}
 
 		/// <summary>
+		/// Helper for making some users in the database
+		/// </summary>
+		/// <returns></returns>
+		private Team55LMSContext MakeUsers()
+		{
+			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
+			optionsBuilder.UseInMemoryDatabase("some_users").UseApplicationServiceProvider(NewServiceProvider());
+
+			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
+
+			Students tony = new Students
+			{
+				FirstName = "Tony",
+				LastName = "Diep",
+				BirthDate = DateTime.Parse("02/02/1996"),
+				Major = "CS",
+				UId = "u0000001"
+			};
+
+			Professors kopta = new Professors
+			{
+				FirstName = "Daniel",
+				LastName = "Kopta",
+				BirthDate = DateTime.Parse("04/01/1987"),
+				Department = "CS",
+				UId = "u0000002"
+			};
+
+			Administrators admin = new Administrators
+			{
+				FirstName = "admin",
+				LastName = "admin",
+				BirthDate = DateTime.Parse("05/01/1970"),
+				UId = "u0000003"
+			};
+
+			db.Students.Add(tony);
+			db.Professors.Add(kopta);
+			db.Administrators.Add(admin);
+			db.SaveChanges();
+
+			return db;
+		}
+
+		/// <summary>
 		/// Verifies that all of the departments are listed
 		/// </summary>
 		[Fact]
@@ -243,7 +288,7 @@ namespace LMSTester
 			common.UseLMSContext(db);
 
 			var departments = common.GetClassOfferings("CS", 5530) as JsonResult;
-			dynamic result = departments.Value.ToString();
+			dynamic result = departments.Value;
 
 			var classOfferings = from cla in db.Classes
 								 where cla.Course.SubjectAbbr == "CS"
@@ -252,6 +297,54 @@ namespace LMSTester
 
 			Assert.Equal(2, classOfferings.Count());
 			//Assert.Equal("{ }", result);
+		}
+
+		/// <summary>
+		/// Verifies information retrieved from a student user
+		/// </summary>
+		[Fact]
+		public void CanGetStudentUser()
+		{
+			CommonController common = new CommonController();
+			Team55LMSContext db = MakeUsers();
+			common.UseLMSContext(db);
+
+			var studentUser = common.GetUser("u0000001") as JsonResult;
+			dynamic result = studentUser.Value;
+
+			Assert.Equal("{ fname = Tony, lname = Diep, uid = u0000001, department = CS }", result.ToString());
+		}
+
+		/// <summary>
+		/// Verifies information retrieved from a professor user
+		/// </summary>
+		[Fact]
+		public void CanGetProfessorUser()
+		{
+			CommonController common = new CommonController();
+			Team55LMSContext db = MakeUsers();
+			common.UseLMSContext(db);
+
+			var professorUser = common.GetUser("u0000002") as JsonResult;
+			dynamic result = professorUser.Value;
+
+			Assert.Equal("{ fname = Daniel, lname = Kopta, uid = u0000002, department = CS }", result.ToString());
+		}
+
+		/// <summary>
+		/// Verifies information retrieved from a professor user
+		/// </summary>
+		[Fact]
+		public void CanGetAdminUser()
+		{
+			CommonController common = new CommonController();
+			Team55LMSContext db = MakeUsers();
+			common.UseLMSContext(db);
+
+			var adminUser = common.GetUser("u0000002") as JsonResult;
+			dynamic result = adminUser.Value;
+
+			Assert.Equal("{ fname = admin, lname = admin, uid = u0000003 }", result.ToString());
 		}
 	}
 }

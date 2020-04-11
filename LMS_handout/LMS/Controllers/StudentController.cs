@@ -256,8 +256,6 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	private String ComputeGrade(string uid)
 	{
-
-
 		//var getGPA = GetGPA(uid) as JsonResult;
 		//double gpa = double.Parse(getGPA.Value.ToString());
 		//

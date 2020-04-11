@@ -81,8 +81,8 @@ namespace LMS.Controllers
 							 where p.Department == subject
 							 select new
 							 {
-								  lName = p.LastName,
-								  fName = p.FirstName,
+								  lname = p.LastName,
+								  fname = p.FirstName,
 								  uid = p.UId
 							 };
 
