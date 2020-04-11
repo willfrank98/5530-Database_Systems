@@ -86,7 +86,7 @@ namespace LMS.Controllers
 	///            "cname": The course name (e.g. "Database Systems")
 	/// </summary>
 	/// 
-	/// NOTE:  This method is called when you click "Catalog" 
+	/// NOTE:  This method is called when you log in as a student and click "Catalog" 
 	/// 
 	/// 
 	/// <returns>The JSON array</returns>
@@ -110,9 +110,9 @@ namespace LMS.Controllers
 
 			return Json(catalog.ToArray());
 		}
-		catch(Exception e)
+		catch(Exception)
 		{
-			return Json(e.Message);
+			return Json("");
 		}
 	}
 
@@ -150,9 +150,9 @@ namespace LMS.Controllers
 
 			return Json(classOfferings.ToArray());
 		}
-		catch(Exception e)
+		catch(Exception)
 		{
-			return Json(e.Message);
+			return Json("");
 		}
     }
 
@@ -276,7 +276,7 @@ namespace LMS.Controllers
 						  fname = stu.FirstName,
 						  lname = stu.LastName,
 						  uid = stu.UId,
-						  major = stu.Major
+						  department = stu.Major
 					  };
 
 		var professor = from pro in db.Professors

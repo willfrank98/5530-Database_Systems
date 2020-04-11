@@ -180,26 +180,40 @@ namespace LMS.Controllers
     {
 		try
 		{
-			var getClassId = from cla in db.Classes
-							 where cla.Semester == season + " " + year.ToString()
-							 && cla.Course.CourseNumber == num
-							 && cla.Course.SubjectAbbr == subject
-							 select new
-							 {
-								cla.ClassId
-							 };
+			uint? classID = FindClassID(subject, num, season, year);
 
-			Enrolled enroll = new Enrolled
-			{
-				UId = uid,
-				Grade = ComputeGrade(uid),
-				ClassId = getClassId.FirstOrDefault().ClassId
-			};
+			var alreadyEnrolledCourse = from enr in db.Enrolled
+										where enr.ClassId == classID
+										&& enr.UId == uid
+										select new
+										{
+											enr.U
+										};
 
-			db.Add(enroll);
-			db.SaveChanges();
+			var grade = from enr in db.Enrolled
+						where enr.ClassId == classID
+						&& enr.UId == uid
+						select new
+						{
+							enr.Grade
+						};
 
-			return Json(new { success = true });
+			if (classID != null && !alreadyEnrolledCourse.Any())
+			{ 
+					Enrolled enroll = new Enrolled
+					{
+						UId = uid,
+						Grade = grade == null ? "--" : ComputeGrade(uid),
+						ClassId = (uint)classID
+					};
+
+					db.Enrolled.Add(enroll);
+					db.SaveChanges();
+
+					return Json(new { success = true });	
+			}
+			
+			return Json(new { success = false });
 		}
 		catch(Exception e)
 		{
@@ -225,18 +239,13 @@ namespace LMS.Controllers
     {     
 		try
 		{
-			if(ComputeGrade(uid) == "--")
-			{
-				return Json(0.0);
-			}
-
 			//TODO: Replace
-			return Json(4.0);
+			return Json(new { gpa = 4.0 });
 		}
 		catch(Exception e)
 		{
 			Console.WriteLine(e.Message);
-			return Json(0.0);
+			return Json(new { gpa = 0.0 });
 		}
     }
 
@@ -247,7 +256,48 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	private String ComputeGrade(string uid)
 	{
+
+
+		//var getGPA = GetGPA(uid) as JsonResult;
+		//double gpa = double.Parse(getGPA.Value.ToString());
+		//
+		//if (gpa >= 3.7 && gpa <= 4.0)
+		//{
+		//	return "A";
+		//}
+		//else if (gpa >= 3.5 && gpa < 3.7)
+		//{
+		//	return "A-";
+		//}
+		//
+		//if (ComputeGrade(uid) == "--")
+		//{
+		//	return Json(0.0);
+		//}
+
 		return "--";
+	}
+
+	/// <summary>
+	/// Helper for finding classID before enrolling a student
+	/// </summary>
+	/// <param name="subject"></param>
+	/// <param name="num"></param>
+	/// <param name="season"></param>
+	/// <param name="year"></param>
+	/// <returns></returns>
+	private uint? FindClassID(string subject, int num, string season, int year)
+	{
+		var query = from cla in db.Classes
+					join cour in db.Courses on cla.CourseId equals cour.CourseId
+					where cla.Semester == season + " " + year
+					&& cour.CourseNumber == num && cour.SubjectAbbr == subject
+					select new
+					{
+						cla.ClassId
+					};
+
+		return query.Any() ? query.ToArray()[0].ClassId : (uint?) null;
 	}
 
 	/*******End code to modify********/

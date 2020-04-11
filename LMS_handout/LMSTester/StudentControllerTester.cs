@@ -39,7 +39,7 @@ namespace LMSTester
 		private Team55LMSContext MakeEmptyDatabase()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("empty_database").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
@@ -78,7 +78,7 @@ namespace LMSTester
 		private Team55LMSContext MakeMyClassesForStudent()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("student_classes").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Newtonsoft.Json;
 
 /// <summary>
 /// A collection of xUnit tests for the following controllers:
@@ -59,13 +60,9 @@ namespace LMSTester
 
 			Departments psychology = new Departments { Name = "Psychology", SubjectAbbr = "PSY" };
 			Departments civilEng = new Departments { Name = "Civil Engineering", SubjectAbbr = "CVEN" };
-			Departments lingustics = new Departments { Name = "Lingustics", SubjectAbbr = "LING" };
-			Departments cs = new Departments { Name = "Computer Science", SubjectAbbr = "CS" };
 
 			db.Departments.Add(psychology);
 			db.Departments.Add(civilEng);
-			db.Departments.Add(lingustics);
-			db.Departments.Add(cs);
 
 			db.SaveChanges();
 
@@ -97,16 +94,18 @@ namespace LMSTester
 
 			Courses calculus = new Courses
 			{
-				CourseId = 0,
+				CourseId = 10,
 				Name = "Calculus I",
-				SubjectAbbr = "MATH"
+				SubjectAbbr = "MATH", 
+				CourseNumber = 1210
 			};
 
 			Courses elementaryPhysics = new Courses
 			{
-				CourseId = 1,
+				CourseId = 11,
 				Name = "Elementary Physics",
-				SubjectAbbr = "PHYS"
+				SubjectAbbr = "PHYS",
+				CourseNumber = 1010
 			};
 
 			db.Departments.Add(math);
@@ -125,7 +124,7 @@ namespace LMSTester
 		private Team55LMSContext MakeClassOfferings()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("tiny_class_offerings").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
@@ -140,7 +139,7 @@ namespace LMSTester
 			Classes dbFall2020Morning = new Classes
 			{
 				ClassId = 0,
-				CourseId = 0,
+				CourseId = 1,
 				Semester = "Fall 2020",
 				Location = "WEB L104",
 				Start = TimeSpan.Parse("10:45:00"),
@@ -151,7 +150,7 @@ namespace LMSTester
 			Classes dbFall2020Evening = new Classes
 			{
 				ClassId = 0,
-				CourseId = 0,
+				CourseId = 2,
 				Semester = "Fall 2020",
 				Location = "WEB L104",
 				Start = TimeSpan.Parse("17:00:00"),
@@ -178,8 +177,14 @@ namespace LMSTester
 			common.UseLMSContext(db);
 
 			var departments = common.GetDepartments() as JsonResult;
+			dynamic result = departments.Value;
 
-			Assert.False(departments != null, "Incomplete test");
+			var departmentsQuery = from depart in db.Departments
+								   select depart;
+
+			Assert.Equal("{ name = Psychology, subject = PSY }", result[0].ToString());
+			Assert.Equal("{ name = Civil Engineering, subject = CVEN }", result[1].ToString());
+			Assert.Equal(2, departmentsQuery.Count());
 		} 
 
 		/// <summary>
@@ -192,14 +197,17 @@ namespace LMSTester
 			Team55LMSContext db = MakeCatalog();
 			common.UseLMSContext(db);
 
-			var catalog = common.GetCatalog();
+			JsonResult catalogs = (JsonResult) common.GetCatalog();
 
-			Assert.False(catalog != null, "Incomplete test");
+			string json = JsonConvert.SerializeObject(catalogs.Value.ToString());
 		}
 
 		/// <summary>
 		/// Verifies that there should not be any class offerings 
 		/// if there aren't any for a given course
+		/// 
+		/// TODO: Find how to compare JSON values in string
+		/// 
 		/// </summary>
 		[Fact]
 		public void NoClassOfferings()
@@ -208,9 +216,20 @@ namespace LMSTester
 			Team55LMSContext db = ConfigureDatabaseNoData();
 			common.UseLMSContext(db);
 
-			var result = common.GetClassOfferings("CS", 5530);
+			var classOfferings = common.GetClassOfferings("CS", 5530) as JsonResult;
+			dynamic result = classOfferings.Value;
 
-			Assert.False(result != null, "Incomplete Test");
+			//season = ExtractSeason(cla.Semester),
+			//year = ExtractYear(cla.Semester),
+			//location = cla.Location,
+			//start = cla.Start,
+			//end = cla.End,
+			//fName = cla.ProfessorNavigation.FirstName,
+			//lname = cla.ProfessorNavigation.LastName
+
+			String expected = "<>f__AnonymousType8`7[System.String,System.String,System.String,System.TimeSpan,System.TimeSpan,System.String,System.String][]";
+
+			Assert.Equal(expected, result.ToString());
 		}
 
 		/// <summary>
@@ -224,8 +243,15 @@ namespace LMSTester
 			common.UseLMSContext(db);
 
 			var departments = common.GetClassOfferings("CS", 5530) as JsonResult;
+			dynamic result = departments.Value.ToString();
 
-			Assert.False(departments != null, "Incomplete test");
+			var classOfferings = from cla in db.Classes
+								 where cla.Course.SubjectAbbr == "CS"
+								 && cla.Course.CourseNumber == 5530
+								 select cla;
+
+			Assert.Equal(2, classOfferings.Count());
+			//Assert.Equal("{ }", result);
 		}
 	}
 }
