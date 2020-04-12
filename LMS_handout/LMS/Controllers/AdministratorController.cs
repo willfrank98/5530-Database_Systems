@@ -90,7 +90,8 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
-			return Json(e.Message);
+			Console.WriteLine(e.Message);
+			return Json(null);
 		}
     }
 
@@ -162,7 +163,7 @@ namespace LMS.Controllers
 				Location = location,
 				Start = start.TimeOfDay,
 				End = end.TimeOfDay,
-				Professor = instructor
+				Professor = instructor, 
 			};
 
 			var allClasses = from cla in db.Classes
@@ -178,8 +179,15 @@ namespace LMS.Controllers
 				}
 			}
 
-			db.Classes.Add(newClass);
-			db.SaveChanges();
+			//var course = from cour in db.Courses
+			//			 where cour.SubjectAbbr == subject
+			//			 && cour.CourseNumber == number
+			//			 select cour;
+
+			//newClass.Course = course.First();
+
+			//db.Classes.Add(newClass);
+			//db.SaveChanges();
 
 			return Json(new { success = true });
 		}

@@ -142,9 +142,21 @@ namespace LMSTester
 						  where enr.UId == "u0000004"
 						  select cl;
 		
-			var result = student.GetMyClasses("u0000004") as JsonResult;
+			var myClasses = student.GetMyClasses("u0000004") as JsonResult;
+			dynamic result = myClasses.Value;
 
-			Assert.Equal(2, classes.Count());
+			/// <summary>
+			/// Returns a JSON array of the classes the given student is enrolled in.
+			/// Each object in the array should have the following fields:
+			/// "subject" - The subject abbreviation of the class (such as "CS")
+			/// "number" - The course number (such as 5530)
+			/// "name" - The course name
+			/// "season" - The season part of the semester
+			/// "year" - The year part of the semester
+			/// "grade" - The grade earned in the class, or "--" if one hasn't been assigned
+			/// </summary>
+
+			Assert.Equal("{ subject =  }", result.ToString());
 		}
 
 		/// <summary>
@@ -192,8 +204,8 @@ namespace LMSTester
 			Team55LMSContext db = MakeTinyCatalog();
 			student.UseLMSContext(db);
 
-			var result = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
-
+			var result = student.Enroll("MATH", 1069, "Fall", 2020, "u0000003") as JsonResult;
+		
 			Assert.Equal("{ success = True }", result.Value.ToString());
 		}
 
@@ -210,7 +222,7 @@ namespace LMSTester
 
 			student.Enroll("LING", 1069, "Fall", 2020, "u0000003");
 
-			var result = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
+			var enrolled = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
 
 			var query = from en in db.Enrolled
 						join cl in db.Classes on en.ClassId equals cl.ClassId
@@ -220,8 +232,10 @@ namespace LMSTester
 						&& c.Semester == "Fall 2020"
 						select en;
 
+			dynamic result = enrolled.Value;
+
 			Assert.Equal(1, query.Count());
-			Assert.Equal("{ success = False }", result.Value.ToString());
+			Assert.Equal("{ success = False }", result.ToString());
 		}
 	}
 }

@@ -13740,11 +13740,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\antho\\Source\\Repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\LMSTester.csproj",
+      "projectUniqueName": "C:\\Users\\antho\\source\\repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\LMSTester.csproj",
       "projectName": "LMSTester",
-      "projectPath": "C:\\Users\\antho\\Source\\Repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\LMSTester.csproj",
+      "projectPath": "C:\\Users\\antho\\source\\repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\LMSTester.csproj",
       "packagesPath": "C:\\Users\\antho\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\antho\\Source\\Repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\obj\\",
+      "outputPath": "C:\\Users\\antho\\source\\repos\\5530-Database_Systems\\LMS_handout\\LMSTester\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -13763,8 +13763,8 @@
       "frameworks": {
         "netcoreapp2.2": {
           "projectReferences": {
-            "C:\\Users\\antho\\Source\\Repos\\5530-Database_Systems\\LMS_handout\\LMS\\LMS.csproj": {
-              "projectPath": "C:\\Users\\antho\\Source\\Repos\\5530-Database_Systems\\LMS_handout\\LMS\\LMS.csproj"
+            "C:\\Users\\antho\\source\\repos\\5530-Database_Systems\\LMS_handout\\LMS\\LMS.csproj": {
+              "projectPath": "C:\\Users\\antho\\source\\repos\\5530-Database_Systems\\LMS_handout\\LMS\\LMS.csproj"
             }
           }
         }

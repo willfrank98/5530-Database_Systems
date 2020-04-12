@@ -95,7 +95,8 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
-			return Json(e.Message);
+			Console.WriteLine(e.Message);
+			return Json(null);
 		}
     }
 
@@ -118,6 +119,12 @@ namespace LMS.Controllers
 		try
 		{
 			var query = from cla in db.Classes
+						join assignCat in db.AssignmentCategories on cla.ClassId equals assignCat.ClassId
+						into assignCategories 
+						from a in assignCategories.DefaultIfEmpty() 
+						join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
+						into assignments 
+						from assi in assignments.DefaultIfEmpty()
 						select cla;
 
 			return Json(query.ToArray());

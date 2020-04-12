@@ -107,11 +107,31 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				return Json(null);
+				var students = from stu in db.Students
+							   join enr in db.Enrolled on stu.UId equals enr.UId
+							   into enrolled 
+							   from en in enrolled.DefaultIfEmpty()
+							   join cla in db.Classes on en.ClassId equals cla.ClassId
+							   into classes 
+							   from c in classes.DefaultIfEmpty()
+							   where c.Semester == season + " " + year
+							   && c.Course.CourseNumber == num 
+							   && c.Course.SubjectAbbr == subject
+							   select new
+							   {
+								   fname = stu.FirstName,
+								   lname = stu.LastName,
+								   uid = stu.UId,
+								   dob = stu.BirthDate,
+								   grade = en.Grade
+							   };
+
+				return Json(students.ToArray());
 			}
 			catch(Exception e)
 			{
-				return Json(e.Message);
+				Console.WriteLine(e.Message);
+				return Json(null);
 			}
 		}
 

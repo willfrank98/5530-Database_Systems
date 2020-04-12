@@ -104,7 +104,7 @@ namespace LMS.Controllers
 									    select new
 									    {
 										    number = c.CourseNumber,
-										    cName = c.Name
+										    cname = c.Name
 									    }
 						  };
 

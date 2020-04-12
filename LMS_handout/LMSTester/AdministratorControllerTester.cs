@@ -510,10 +510,10 @@ namespace LMSTester
 			dynamic result = professors.Value;
 
 			var csProfessors = from pro in db.Professors
-								  where pro.Department == "CS"
-								  select pro;
+							   where pro.Department == "CS"
+							   select pro;
 
-			Assert.Equal("{ lName = Kopta, fName = Daniel, uid = u0000001 }", result[0].ToString());
+			Assert.Equal("{ lname = Kopta, fname = Daniel, uid = u0000001 }", result[0].ToString());
 			Assert.Equal(1, csProfessors.Count());
 		}
 
@@ -532,11 +532,11 @@ namespace LMSTester
 			dynamic result = professors.Value;
 
 			var lingProfessors = from pro in db.Professors
-								    where pro.Department == "LING"
-								    select pro;
+								 where pro.Department == "LING"
+								 select pro;
 
-			Assert.Equal("{ lName = Eggert, fName = Randall, uid = u0000002 }", result[0].ToString());
-			Assert.Equal("{ lName = Paul Vooge, fName = Nathan, uid = u0000003 }", result[1].ToString());
+			Assert.Equal("{ lname = Eggert, fname = Randall, uid = u0000002 }", result[0].ToString());
+			Assert.Equal("{ lname = Paul Vooge, fname = Nathan, uid = u0000003 }", result[1].ToString());
 			Assert.Equal(2, lingProfessors.Count());
 		}
 
@@ -558,9 +558,9 @@ namespace LMSTester
 								 where pro.Department == "MATH"
 								 select pro;
 
-			Assert.Equal("{ lName = McArthur, fName = Kelly, uid = u0000004 }", result[0].ToString());
-			Assert.Equal("{ lName = Cecil, fName = Matthew, uid = u0000005 }", result[1].ToString());
-			Assert.Equal("{ lName = Rowland, fName = Ashley, uid = u0000006 }", result[2].ToString());
+			Assert.Equal("{ lname = McArthur, fname = Kelly, uid = u0000004 }", result[0].ToString());
+			Assert.Equal("{ lname = Cecil, fname = Matthew, uid = u0000005 }", result[1].ToString());
+			Assert.Equal("{ lname = Rowland, fname = Ashley, uid = u0000006 }", result[2].ToString());
 			Assert.Equal(3, mathProfessors.Count());
 		}
 	}
