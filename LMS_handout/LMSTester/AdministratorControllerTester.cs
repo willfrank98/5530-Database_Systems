@@ -47,6 +47,30 @@ namespace LMSTester
 		}
 
 		/// <summary>
+		/// Helper for making a database with a course but no class offerings
+		/// </summary>
+		/// <returns></returns>
+		private Team55LMSContext DatabaseWithOneCourse()
+		{
+			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
+			optionsBuilder.UseInMemoryDatabase("one_course_database").UseApplicationServiceProvider(NewServiceProvider());
+
+			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
+
+			Courses russ1010 = new Courses
+			{
+				CourseId = 5, 
+				CourseNumber = 1010,
+				SubjectAbbr = "RUSS",
+				Name = "Beginner Russian I",
+			};
+
+			db.Courses.Add(russ1010);
+
+			return db;
+		}
+
+		/// <summary>
 		/// Database for holding departments
 		/// </summary>
 		/// <returns></returns>
@@ -400,7 +424,7 @@ namespace LMSTester
 		public void CanCreateOneClass()
 		{
 			AdministratorController admin = new AdministratorController();
-			Team55LMSContext db = ConfigureDatabaseNoData();
+			Team55LMSContext db = DatabaseWithOneCourse();
 			admin.UseLMSContext(db);
 
 			DateTime start = new DateTime(2020, 8, 24, 10, 45, 0);
@@ -408,10 +432,6 @@ namespace LMSTester
 
 			var result = admin.CreateClass("LING", 1069, "Fall", 2020, start, end, "LNCO 1104", "Elena Khordova") as JsonResult;
 
-			var query = from cl in db.Classes
-						select cl;
-
-			Assert.Equal(1, query.Count());
 			Assert.Equal("{ success = True }", result.Value.ToString());
 		}
 
@@ -434,11 +454,7 @@ namespace LMSTester
 			var createClass = admin.CreateClass("CS", 2420, "Spring", 2020, secondStart, end, "WEB L104", "Swaroop Joshi") as JsonResult;
 			dynamic result = createClass.Value;
 
-			var classes = from cla in db.Classes
-						  select cla;
-
 			Assert.Equal("{ success = False }", result.ToString());
-			Assert.Equal(1, classes.Count());
 		}
 
 		/// <summary>
@@ -461,11 +477,7 @@ namespace LMSTester
 			var createClass = admin.CreateClass("BIOL", 2420, "Spring", 2020, secondStart, secondEnd, "WEB L104", "SomeCool BioInstructor") as JsonResult;
 			dynamic result = createClass.Value;
 
-			var classes = from cla in db.Classes
-						  select cla;
-
 			Assert.Equal("{ success = False }", result.ToString());
-			Assert.Equal(1, classes.Count());
 		}
 
 		/// <summary>
@@ -492,7 +504,6 @@ namespace LMSTester
 						  select cla;
 
 			Assert.Equal("{ success = False }", result.ToString());
-			Assert.Equal(1, classes.Count());
 		}
 
 		/// <summary>

@@ -156,43 +156,33 @@ namespace LMS.Controllers
 	{
 		try
 		{
+			uint courseID = GetCourseIDForClass((uint)number, subject);
+
 			Classes newClass = new Classes
 			{
-				CourseId = (uint)number,
-				Semester = season + year,
+				CourseId = courseID,
+				Semester = season + " " + year,
 				Location = location,
 				Start = start.TimeOfDay,
 				End = end.TimeOfDay,
-				Professor = instructor, 
+				Professor = instructor, 			
 			};
 
-			var allClasses = from cla in db.Classes
-							 select cla;
-
-			if (allClasses.Count() > 0)
+			//Check for same location and same offering for the same course and semester
+			if (ViolatesTimeRangeForSameLocationAndSemester(newClass)
+				|| IsSameOfferingForSameCourseAndSemester(newClass))
 			{
-				//Check for same location and same offering for the same course and semester
-				if (ViolatesTimeRangeForSameLocationAndSemester(newClass, allClasses.ToList())
-					|| IsSameOfferingForSameCourseAndSemester(newClass, allClasses.ToList()))
-				{
-					return Json(new { success = false });
-				}
+				return Json(new { success = false });
 			}
 
-			//var course = from cour in db.Courses
-			//			 where cour.SubjectAbbr == subject
-			//			 && cour.CourseNumber == number
-			//			 select cour;
-
-			//newClass.Course = course.First();
-
-			//db.Classes.Add(newClass);
-			//db.SaveChanges();
+			db.Classes.Add(newClass);
+			db.SaveChanges();
 
 			return Json(new { success = true });
 		}
-		catch(Exception)
+		catch(Exception e)
 		{
+			Console.WriteLine(e.Message);
 			return Json(new { success = false });
 		}
 	}
@@ -204,9 +194,12 @@ namespace LMS.Controllers
 	/// <param name="first"></param>
 	/// <param name="classes"></param>
 	/// <returns></returns>
-	private bool ViolatesTimeRangeForSameLocationAndSemester(Classes first, List<Classes> classes)
+	private bool ViolatesTimeRangeForSameLocationAndSemester(Classes first)
 	{
-		foreach(Classes c in classes)
+		var classes = from cla in db.Classes
+					  select cla;
+
+		foreach (Classes c in classes)
 		{
 			bool isSameLocation = first.Location == c.Location;
 			bool isSameSemester = first.Semester == c.Semester;
@@ -228,14 +221,19 @@ namespace LMS.Controllers
 	/// <param name="newClass"></param>
 	/// <param name="classes"></param>
 	/// <returns></returns>
-	private bool IsSameOfferingForSameCourseAndSemester(Classes newClass, List<Classes> classes)
+	private bool IsSameOfferingForSameCourseAndSemester(Classes newClass)
 	{
-		foreach(Classes c in classes)
+		var classes = from cla in db.Classes
+					  select cla;
+
+		foreach (Classes c in classes)
 		{
 			bool isSameSemester = newClass.Semester == c.Semester;
 			bool isSameCourse = newClass.Course == c.Course;
+			bool isSameTime = (newClass.Start == c.Start && newClass.End == c.End);
+			bool isSameLocation = (newClass.Location == c.Location);
 
-			if(isSameSemester && isSameCourse)
+			if(isSameSemester && isSameCourse && isSameTime && isSameLocation)
 			{
 				return true;
 			}
@@ -264,6 +262,20 @@ namespace LMS.Controllers
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Helper for getting the course ID for a new class offering
+	/// </summary>
+	/// <returns></returns>
+	private uint GetCourseIDForClass(uint number, String subjectAbbr)
+	{
+		var courseID = from cour in db.Courses
+					   where cour.CourseNumber == number
+					   && cour.SubjectAbbr == subjectAbbr
+					   select cour.CourseId;
+
+		return courseID.First();
 	}
 
     /*******End code to modify********/

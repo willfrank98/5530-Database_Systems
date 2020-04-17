@@ -234,8 +234,8 @@ namespace LMSTester
 
 			dynamic result = enrolled.Value;
 
-			Assert.Equal(1, query.Count());
 			Assert.Equal("{ success = False }", result.ToString());
+			Assert.Equal(1, query.Count());
 		}
 	}
 }

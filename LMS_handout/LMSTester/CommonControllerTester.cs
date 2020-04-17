@@ -94,25 +94,25 @@ namespace LMSTester
 
 			Courses calculus = new Courses
 			{
-				CourseId = 10,
-				Name = "Calculus I",
-				SubjectAbbr = "MATH", 
-				CourseNumber = 1210
+				CourseId = 2,
+				CourseNumber = 1210,
+				SubjectAbbr = "MATH",
+				Name = "Calculus I"
 			};
 
-			Courses elementaryPhysics = new Courses
+			Courses physics2210 = new Courses
 			{
-				CourseId = 11,
-				Name = "Elementary Physics",
+				CourseId = 3,
+				CourseNumber = 2210,
 				SubjectAbbr = "PHYS",
-				CourseNumber = 1010
+				Name = "Physics For Scientists And Engineers I"
 			};
 
 			db.Departments.Add(math);
 			db.Departments.Add(physics);
-
 			db.Courses.Add(calculus);
-			db.Courses.Add(elementaryPhysics);
+			db.Courses.Add(physics2210);
+			db.SaveChanges();
 
 			return db;
 		}
@@ -248,9 +248,11 @@ namespace LMSTester
 			Team55LMSContext db = MakeCatalog();
 			common.UseLMSContext(db);
 
-			JsonResult catalogs = (JsonResult) common.GetCatalog();
+			var getCatalog = common.GetCatalog() as JsonResult;
+			dynamic result = getCatalog.Value;
 
-			string json = JsonConvert.SerializeObject(catalogs.Value.ToString());
+			String expected = "{ subject = Mathematics, dname = MATH, courses = { number = 1210, cname = Calculus I }, { subject = Physics, dname = PHYS, courses = { number = 2210, cname = Physics For Scientists And Engineers I } }";
+			Assert.Equal(expected, result[0].ToString());
 		}
 
 		/// <summary>

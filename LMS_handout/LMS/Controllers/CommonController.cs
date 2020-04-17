@@ -134,9 +134,10 @@ namespace LMS.Controllers
     {
 		try
 		{
+			//cla.ProfessorNavigation.FirstName and Last Name are null...
 			var classOfferings = from cla in db.Classes
-								 where cla.Course.SubjectAbbr == subject
-								 && cla.Course.CourseNumber == number
+								 where cla.Course.CourseNumber == number
+								 && cla.Course.SubjectAbbr == subject
 								 select new
 								 {
 									 season = ExtractSeason(cla.Semester),
@@ -146,13 +147,14 @@ namespace LMS.Controllers
 									 end = cla.End,
 									 fname = cla.ProfessorNavigation.FirstName,
 									 lname = cla.ProfessorNavigation.LastName
-								};
+								 };
 
 			return Json(classOfferings.ToArray());
 		}
-		catch(Exception)
+		catch(Exception e)
 		{
-			return Json("");
+			Console.WriteLine(e.Message);
+			return Json(null);
 		}
     }
 
@@ -321,7 +323,7 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	public static String ExtractSeason(String semester)
 	{
-		return semester.Substring(0, semester.Length - semester.IndexOf(" "));
+		return semester.Substring(0, semester.IndexOf(" ") + 1);
 	}
 
 	/// <summary>

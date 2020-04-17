@@ -125,7 +125,14 @@ namespace LMS.Controllers
 						join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
 						into assignments 
 						from assi in assignments.DefaultIfEmpty()
-						select cla;
+						select 
+						new
+						{
+							aname = "test",
+							cname = "test",
+							due = "test",
+							score = "--" 
+						};
 
 			return Json(query.ToArray());
 		}
