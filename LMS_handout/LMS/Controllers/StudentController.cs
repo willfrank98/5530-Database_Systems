@@ -74,13 +74,17 @@ namespace LMS.Controllers
     {
 		try
 		{
-			var classes = from en in db.Enrolled
-						  join cla in db.Classes on en.ClassId equals cla.ClassId
+			var classes = from stu in db.Students
+						  join en in db.Enrolled on stu.UId equals en.UId
+						  into enrolled
+						  from enr in enrolled.DefaultIfEmpty()
+						  join cla in db.Classes on enr.ClassId equals cla.ClassId
 						  into enJoinCla
-						  from clas in enJoinCla.DefaultIfEmpty()
+						  from clas in enJoinCla.Distinct()
 						  join cour in db.Courses on clas.CourseId equals cour.CourseId
 						  into courses
-						  from c in courses.DefaultIfEmpty()
+						  from c in courses.Distinct()
+						  where stu.UId == uid
 						  select new
 						  {
 							  subject = c.SubjectAbbr,
@@ -88,7 +92,7 @@ namespace LMS.Controllers
 							  name = c.Name,
 							  season = ExtractSeason(clas.Semester),
 							  year = ExtractYear(clas.Semester),
-							  grade = en.Grade
+							  grade = enr.Grade
 						  };	
 
 			return Json(classes.ToArray());
@@ -169,6 +173,12 @@ namespace LMS.Controllers
 			var query = from asCat in db.AssignmentCategories
 						select asCat;
 
+			Submission submission = new Submission
+			{
+				UId = uid,
+				Time = DateTime.Now,
+				Contents = contents,	
+			};
 
 			return Json(new { success = true });
 		}
@@ -217,7 +227,7 @@ namespace LMS.Controllers
 					Enrolled enroll = new Enrolled
 					{
 						UId = uid,
-						Grade = grade == null ? "--" : ComputeGrade(uid),
+						Grade = "--",
 						ClassId = (uint)classID
 					};
 
@@ -262,33 +272,6 @@ namespace LMS.Controllers
 			return Json(new { gpa = 0.0 });
 		}
     }
-
-	/// <summary>
-	/// Helper for computing the grade for the class the student is in 
-	/// </summary>
-	/// <param name="assignments"></param>
-	/// <returns></returns>
-	private String ComputeGrade(string uid)
-	{
-		//var getGPA = GetGPA(uid) as JsonResult;
-		//double gpa = double.Parse(getGPA.Value.ToString());
-		//
-		//if (gpa >= 3.7 && gpa <= 4.0)
-		//{
-		//	return "A";
-		//}
-		//else if (gpa >= 3.5 && gpa < 3.7)
-		//{
-		//	return "A-";
-		//}
-		//
-		//if (ComputeGrade(uid) == "--")
-		//{
-		//	return Json(0.0);
-		//}
-
-		return "--";
-	}
 
 	/// <summary>
 	/// Helper for finding classID before enrolling a student

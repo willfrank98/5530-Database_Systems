@@ -137,6 +137,14 @@ namespace LMSTester
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
+			Courses biology = new Courses
+			{
+				CourseId = 0,
+				CourseNumber = 1210,
+				Name = "Intro to Biology",
+				SubjectAbbr = "BIOL"
+			};
+
 			Classes biology1210 = new Classes
 			{
 				ClassId = 0,
@@ -179,6 +187,7 @@ namespace LMSTester
 			db.Students.Add(two);
 			db.Students.Add(three);
 
+			db.Courses.Add(biology);
 			db.Classes.Add(biology1210);
 
 			db.SaveChanges();
@@ -217,6 +226,7 @@ namespace LMSTester
 				Course = cr_1010
 			};
 
+			db.Courses.Add(cr_1010);
 			db.Classes.Add(germ_1010);
 			db.SaveChanges();
 
@@ -274,29 +284,8 @@ namespace LMSTester
 				Course = cr_2420
 			};
 
-			Courses cr_3810 = new Courses
-			{
-				CourseId = 7,
-				CourseNumber = 3810,
-				Name = "Computer Organization",
-				SubjectAbbr = "CS"
-			};
-
-			Classes cs3810 = new Classes
-			{
-				ClassId = 5,
-				CourseId = cr_3810.CourseId,
-				Location = "WEB L103",
-				Semester = "Fall 2019",
-				Start = TimeSpan.Parse("09:20:00"),
-				End = TimeSpan.Parse("10:30:00"),
-				Professor = "u1111110", 
-				Course = cr_3810
-			};
-
 			db.Classes.Add(cs1030);
 			db.Classes.Add(cs2420);
-			db.Classes.Add(cs3810);
 			db.SaveChanges();
 
 			return db;
@@ -350,9 +339,12 @@ namespace LMSTester
 			var allStudents = prof.GetStudentsInClass("BIOL", 1210, "Fall", 2020) as JsonResult;
 			dynamic result = allStudents.Value;
 
-			Assert.Equal("{ { fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }, " +
-				"{ fname = Will, lname = Frank, dob = 01/01/1998, grade = -- }, " +
-	            " { fname = Jon, lname = Pilling, dob = 03/01/1995, grade = -- } }", result.ToString());
+			String firstStudent = "{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }";
+			Assert.Equal(firstStudent, result[0].ToString());
+
+			//Assert.Equal("{ { fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }, " +
+			//	"{ fname = Will, lname = Frank, dob = 01/01/1998, grade = -- }, " +
+			//  " { fname = Jon, lname = Pilling, dob = 03/01/1995, grade = -- } }", result.ToString());
 		}
 
 		/// <summary>
@@ -368,7 +360,7 @@ namespace LMSTester
 			var oneClass = prof.GetMyClasses("u0999990") as JsonResult;
 			dynamic result = oneClass.Value;
 
-			Assert.Equal("{ subject = GERM, number = 1010, name = Beginner German I, season = Fall, year = 2018 }", result.ToString());
+			Assert.Equal("{ subject = GERM, number = 1010, name = Beginner German I, season = Fall, year = 2018 }", result[0].ToString());
 		}
 
 		/// <summary>
@@ -385,9 +377,11 @@ namespace LMSTester
 			var profClasses = prof.GetMyClasses("u1111110") as JsonResult;
 			dynamic result = profClasses.Value;
 
-			Assert.Equal("{ { subject = CS, number = 1410, name = Intro to Computer Science, season = Fall, year = 2018 }, " +
-				" { subject = CS, number = 2420, name = Data Structures & Algorithms, season = Fall, year = 2017 }, " +
-				" { subject = CS, number = 3810, name = Computer Organization, season = Fall, year = 2019 } }", result[0].ToString());
+			String firstClass = "{ subject = CS, number = 1030, name = Intro to Computer Science, season = Fall, year = 2018 }";
+			String secondClass = "{ subject = CS, number = 2420, name = Data Structures & Algorithms, season = Fall, year = 2017 }";
+
+			Assert.Equal(firstClass, result[0].ToString());
+			Assert.Equal(secondClass, result[1].ToString());
 		}
 	}
 }

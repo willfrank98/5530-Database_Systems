@@ -183,6 +183,7 @@ namespace LMS.Controllers
 											submissions = 0
 										 };
 
+					return Json(allAssignments.ToArray());
 				}
 				else
 				{
@@ -207,10 +208,10 @@ namespace LMS.Controllers
 														due = assi.DueDate,
 														submissions = 0
 												   };
+
+					return Json(allAssignmentsInCategory.ToArray());
 				}
 
-
-				return Json(null);
 			}
 			catch(Exception e)
 			{
@@ -335,7 +336,8 @@ namespace LMS.Controllers
 			}
 			catch(Exception e)
 			{
-				return Json(e.Message);
+				Console.WriteLine(e.Message);
+				return Json(new { success = false });
 			}
 		}
 
@@ -412,6 +414,8 @@ namespace LMS.Controllers
 		{
 			try
 			{
+
+
 				return Json(new { success = true });
 			}
 			catch(Exception e)
@@ -442,10 +446,10 @@ namespace LMS.Controllers
 			try
 			{
 				var profClasses = from cla in db.Classes
+								  where cla.Professor == uid
 								  join cour in db.Courses on cla.CourseId equals cour.CourseId
 								  into classes
 								  from c in classes.DefaultIfEmpty()
-								  where cla.Professor == uid
 								  select new
 								  {
 										subject = c.SubjectAbbr,
@@ -474,7 +478,15 @@ namespace LMS.Controllers
 			var categories = from cat in db.AssignmentCategories
 							 select cat;
 
-			return categories.Contains(category);
+			foreach(AssignmentCategories c in categories)
+			{
+				if(c.Name.ToLower() == category.Name.ToLower())
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>
