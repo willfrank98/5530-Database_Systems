@@ -307,17 +307,17 @@ namespace LMS.Controllers
 						uid = adm.UId
 					};
 
-		if(student != null)
+		if(student.Count() > 0)
 		{
 			return Json(student.First());
 		}
-		else if(professor != null)
+		else if(professor.Count() > 0)
 		{
 			return Json(professor.First());
 		}
-		else if(admin != null)
+		else if(admin.Count() > 0)
 		{
-			return Json(professor.First());
+			return Json(admin.First());
 		}
 
 		return Json(new { success = false });

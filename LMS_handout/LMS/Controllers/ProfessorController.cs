@@ -183,6 +183,7 @@ namespace LMS.Controllers
 											submissions = 0
 										 };
 
+					return Json(allAssignments.ToArray());
 				}
 				else
 				{
@@ -207,10 +208,9 @@ namespace LMS.Controllers
 														due = assi.DueDate,
 														submissions = 0
 												   };
+
+					return Json(allAssignmentsInCategory.ToArray());
 				}
-
-
-				return Json(null);
 			}
 			catch(Exception e)
 			{
