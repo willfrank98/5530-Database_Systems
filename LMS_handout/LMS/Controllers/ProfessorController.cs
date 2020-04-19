@@ -160,6 +160,56 @@ namespace LMS.Controllers
 		{
 			try
 			{
+				if(category == null)
+				{
+					var allAssignments = from cour in db.Courses
+										 join cla in db.Classes on cour.CourseId equals cla.CourseId
+										 into classes
+										 from c in classes.DefaultIfEmpty()
+										 join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
+										 into categories
+										 from cat in categories.DefaultIfEmpty()
+										 join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
+										 into assignments
+										 from assi in assignments.DefaultIfEmpty()
+										 where cour.SubjectAbbr == subject
+										 where cour.CourseNumber == num
+										 where c.Semester == season + " " + year
+										 select new
+										 {
+											aname = assi.Name,
+											cname = cat.Name,
+											due = assi.DueDate,
+											submissions = 0
+										 };
+
+				}
+				else
+				{
+					var allAssignmentsInCategory = from cour in db.Courses
+												   join cla in db.Classes on cour.CourseId equals cla.CourseId
+												   into classes
+												   from c in classes.DefaultIfEmpty()
+												   join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
+												   into categories
+												   from cat in categories.DefaultIfEmpty()
+												   join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
+												   into assignments
+												   from assi in assignments.DefaultIfEmpty()
+												   where cour.SubjectAbbr == subject
+												   where cour.CourseNumber == num
+												   where c.Semester == season + " " + year
+												   where category == cat.Name
+												   select new
+												   {
+														aname = assi.Name,
+														cname = cat.Name,
+														due = assi.DueDate,
+														submissions = 0
+												   };
+				}
+
+
 				return Json(null);
 			}
 			catch(Exception e)
@@ -311,11 +361,37 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				return Json(null);
+				var submissionsToAssignment = from cour in db.Courses
+											  join cla in db.Classes on cour.CourseId equals cla.CourseId
+											  into classes
+											  from cl in classes.DefaultIfEmpty()
+											  join aCat in db.AssignmentCategories on cl.ClassId equals aCat.ClassId
+											  into categories
+											  from ca in categories.DefaultIfEmpty()
+											  join assign in db.Assignments on ca.AssignCatId equals assign.AssignCatId
+											  into assignments
+											  from assi in assignments.DefaultIfEmpty()
+											  join sub in db.Submission on assi.AssignmentId equals sub.AssignmentId
+											  into submissions
+											  from submis in submissions.DefaultIfEmpty()
+											  join stu in db.Students on submis.UId equals stu.UId
+											  into students
+											  from stu in students.DefaultIfEmpty()
+											  select new
+											  {
+												  fname = stu.FirstName,
+												  lname = stu.LastName,
+												  uid = stu.UId,
+												  time = submis.Time,
+												  score = submis.Score
+											  };
+
+				return Json(submissionsToAssignment.ToArray());
 			}
 			catch(Exception e)
 			{
-				return Json(e.Message);
+				Console.WriteLine(e.Message);
+				return Json(null);
 			}
 		}
 
