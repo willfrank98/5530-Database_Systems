@@ -128,9 +128,9 @@ namespace LMS.Controllers
 						select 
 						new
 						{
-							aname = "test",
-							cname = "test",
-							due = "test",
+							aname = assi.Name,
+							cname = a.Name,
+							due = assi.DueDate,
 							score = "--" 
 						};
 

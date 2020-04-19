@@ -207,7 +207,7 @@ namespace LMSTester
 		private Team55LMSContext MakeProfessorUser()
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("student_user").UseApplicationServiceProvider(NewServiceProvider());
+			optionsBuilder.UseInMemoryDatabase("professor_user").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
@@ -280,15 +280,7 @@ namespace LMSTester
 			var classOfferings = common.GetClassOfferings("CS", 5530) as JsonResult;
 			dynamic result = classOfferings.Value;
 
-			//season = ExtractSeason(cla.Semester),
-			//year = ExtractYear(cla.Semester),
-			//location = cla.Location,
-			//start = cla.Start,
-			//end = cla.End,
-			//fName = cla.ProfessorNavigation.FirstName,
-			//lname = cla.ProfessorNavigation.LastName
-
-			String expected = "{  }";
+			String expected = "{ }";
 
 			Assert.Equal(expected, result.ToString());
 		}
@@ -332,7 +324,7 @@ namespace LMSTester
 		public void CanGetProfessorUser()
 		{
 			CommonController common = new CommonController();
-			Team55LMSContext db = MakeStudentUser();
+			Team55LMSContext db = MakeProfessorUser();
 			common.UseLMSContext(db);
 
 			var professorUser = common.GetUser("u0000010") as JsonResult;

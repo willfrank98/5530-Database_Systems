@@ -338,9 +338,9 @@ namespace LMS.Controllers
 	/// </summary>
 	/// <param name="semester"></param>
 	/// <returns></returns>
-	public static String ExtractYear(String semester)
+	public static int ExtractYear(String semester)
 	{
-		return semester.Substring(semester.IndexOf(" ") + 1);
+		return int.Parse(semester.Substring(semester.IndexOf(" ") + 1));
 	}
 
     /*******End code to modify********/

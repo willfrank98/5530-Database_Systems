@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using LMS.Models.LMSModels;
 
 namespace LMS.Controllers
 {
@@ -184,7 +185,17 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				return Json(null);
+				var aCategories = from cla in db.Classes
+								  join aCat in db.AssignmentCategories on cla.ClassId equals aCat.ClassId
+								  into aCats
+								  from a in aCats.DefaultIfEmpty()
+								  select new
+								  {
+										name = a.Name,
+										weight = a.Weight
+								  };
+
+				return Json(aCategories.ToArray());
 			}
 			catch(Exception e)
 			{
@@ -207,7 +218,24 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				return Json(new { success = false });
+				uint classIDForAsnCat = GetClassID(subject, num, season, year);
+
+				AssignmentCategories aCat = new AssignmentCategories
+				{
+					ClassId = classIDForAsnCat,
+					Name = category, 
+					Weight = (uint) catweight
+				};
+
+				if(AssignmentCategoryExists(aCat))
+				{
+					return Json(new { success = false });
+				}
+
+				db.AssignmentCategories.Add(aCat);
+				db.SaveChanges();
+
+				return Json(new { success = true });
 			}
 			catch(Exception e)
 			{
@@ -234,7 +262,26 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				return Json(new { success = false });
+				uint aCatID = GetAssignmentCategoryID(category);
+
+				Assignments assignment = new Assignments
+				{
+					AssignCatId = aCatID,
+					Contents = asgcontents,
+					DueDate = asgdue,
+					Name = asgname,
+					MaxPoints = (uint) asgpoints
+				};
+
+				if(AssignmentAlreadyExists(assignment))
+				{
+					return Json(new { success = false });
+				}
+
+				db.Assignments.Add(assignment);
+				db.SaveChanges();
+
+				return Json(new { success = true });
 			}
 			catch(Exception e)
 			{
@@ -321,7 +368,7 @@ namespace LMS.Controllers
 				var profClasses = from cla in db.Classes
 								  join cour in db.Courses on cla.CourseId equals cour.CourseId
 								  into classes
-								  from c in classes.Distinct()
+								  from c in classes.DefaultIfEmpty()
 								  where cla.Professor == uid
 								  select new
 								  {
@@ -340,6 +387,70 @@ namespace LMS.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Helper for verifying if a newly created assignment category
+		/// already exists for the class
+		/// </summary>
+		/// <param name="category"></param>
+		/// <returns></returns>
+		private bool AssignmentCategoryExists(AssignmentCategories category)
+		{
+			var categories = from cat in db.AssignmentCategories
+							 select cat;
+
+			return categories.Contains(category);
+		}
+
+		/// <summary>
+		/// Helper for getting the class ID
+		/// </summary>
+		/// <param name="subject"></param>
+		/// <param name="num"></param>
+		/// <param name="season"></param>
+		/// <param name="year"></param>
+		/// <returns></returns>
+		private uint GetClassID(string subject, int num, string season, int year)
+		{
+			var classID = from cla in db.Classes
+						  join cour in db.Courses on cla.CourseId equals cour.CourseId
+						  into courseClasses
+						  from c in courseClasses.DefaultIfEmpty()
+						  where c.SubjectAbbr == subject
+						  && c.CourseNumber == num
+						  && cla.Semester == season + " " + year
+						  select cla.ClassId;
+
+			return classID.First();
+		}
+
+		/// <summary>
+		/// Helper for getting the assignment category ID
+		/// </summary>
+		/// <param name="category"></param>
+		/// <returns></returns>
+		private uint GetAssignmentCategoryID(String category)
+		{
+			var aCatID = from aCat in db.AssignmentCategories
+						 where aCat.Name == category
+						 select aCat.AssignCatId;
+
+			return aCatID.First();
+		}
+
+		/// <summary>
+		/// Helper to verify if a duplicate assignment exists
+		/// </summary>
+		/// <param name="assignment"></param>
+		/// <returns></returns>
+		private bool AssignmentAlreadyExists(Assignments assignment)
+		{
+			var assignments = from assign in db.Assignments
+							  where assign.AssignCatId == assignment.AssignCatId
+							  where assign.Name == assignment.Name
+							  select assign;
+
+			return assignments.Any();
+		}
 
 		/*******End code to modify********/
 

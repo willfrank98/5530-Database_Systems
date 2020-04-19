@@ -387,7 +387,7 @@ namespace LMSTester
 
 			Assert.Equal("{ { subject = CS, number = 1410, name = Intro to Computer Science, season = Fall, year = 2018 }, " +
 				" { subject = CS, number = 2420, name = Data Structures & Algorithms, season = Fall, year = 2017 }, " +
-				" { subject = CS, number = 3810, name = Computer Organization, season = Fall, year = 2019 } }", result.ToString());
+				" { subject = CS, number = 3810, name = Computer Organization, season = Fall, year = 2019 } }", result[0].ToString());
 		}
 	}
 }
