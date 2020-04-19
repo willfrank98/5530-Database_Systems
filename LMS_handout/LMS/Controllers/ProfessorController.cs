@@ -114,9 +114,12 @@ namespace LMS.Controllers
 							   join cla in db.Classes on en.ClassId equals cla.ClassId
 							   into classes 
 							   from c in classes.DefaultIfEmpty()
+							   join cour in db.Courses on c.CourseId equals cour.CourseId
+							   into courses 
+							   from co in courses.DefaultIfEmpty()
 							   where c.Semester == season + " " + year
-							   && c.Course.CourseNumber == num 
-							   && c.Course.SubjectAbbr == subject
+							   && co.CourseNumber == num 
+							   && co.SubjectAbbr == subject
 							   select new
 							   {
 								   fname = stu.FirstName,
@@ -316,14 +319,17 @@ namespace LMS.Controllers
 			try
 			{
 				var profClasses = from cla in db.Classes
+								  join cour in db.Courses on cla.CourseId equals cour.CourseId
+								  into classes
+								  from c in classes.Distinct()
 								  where cla.Professor == uid
 								  select new
 								  {
-									  subject = cla.Course.SubjectAbbr,
-									  number = cla.Course.CourseNumber,
-									  name = cla.Course.Name,
-									  season = ExtractSeason(cla.Semester),
-									  year = ExtractYear(cla.Semester)
+										subject = c.SubjectAbbr,
+										number = c.CourseNumber,
+										name = c.Name,
+										season = ExtractSeason(cla.Semester),
+										year = ExtractYear(cla.Semester)
 								  };
 
 				return Json(profClasses.ToArray());

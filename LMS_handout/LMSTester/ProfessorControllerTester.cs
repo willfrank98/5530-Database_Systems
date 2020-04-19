@@ -316,7 +316,7 @@ namespace LMSTester
 			var allStudents = prof.GetStudentsInClass("CHEM", 1210, "Summer", 2020) as JsonResult;
 			dynamic result = allStudents.Value;
 
-			Assert.Equal("{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }", result.ToString());
+			Assert.Equal("{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }", result[0].ToString());
 		}
 
 		/// <summary>

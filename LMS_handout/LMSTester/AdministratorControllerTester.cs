@@ -430,7 +430,7 @@ namespace LMSTester
 			DateTime start = new DateTime(2020, 8, 24, 10, 45, 0);
 			DateTime end = new DateTime(2020, 8, 24, 11, 35, 0);
 
-			var result = admin.CreateClass("LING", 1069, "Fall", 2020, start, end, "LNCO 1104", "Elena Khordova") as JsonResult;
+			var result = admin.CreateClass("RUSS", 1010, "Fall", 2020, start, end, "LNCO 1104", "Elena Khordova") as JsonResult;
 
 			Assert.Equal("{ success = True }", result.Value.ToString());
 		}
@@ -493,11 +493,9 @@ namespace LMSTester
 
 			DateTime start = new DateTime(2020, 8, 24, 14, 00, 00);
 			DateTime end = new DateTime(2020, 8, 24, 15, 20, 00);
-			DateTime secondStart = new DateTime(2020, 8, 24, 10, 45, 0);
-			DateTime secondEnd = new DateTime(2020, 8, 24, 11, 35, 0);
 
 			admin.CreateClass("CS", 2420, "Spring", 2020, start, end, "WEB L104", "Swaroop Joshi");
-			var createClass = admin.CreateClass("CS", 2420, "Spring", 2020, secondStart, secondEnd, "WEB L104", "SomeCool BioInstructor") as JsonResult;
+			var createClass = admin.CreateClass("CS", 2420, "Spring", 2020, start, end, "WEB L104", "Swaroop Joshi") as JsonResult;
 			dynamic result = createClass.Value;
 
 			var classes = from cla in db.Classes

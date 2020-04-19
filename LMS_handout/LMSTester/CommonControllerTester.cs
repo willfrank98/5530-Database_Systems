@@ -187,7 +187,15 @@ namespace LMSTester
 			};
 
 			db.Students.Add(tony);
-			db.SaveChanges();
+
+			try
+			{
+				db.SaveChanges();
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
 
 			return db;
 		}
@@ -298,13 +306,7 @@ namespace LMSTester
 			var departments = common.GetClassOfferings("CS", 5530) as JsonResult;
 			dynamic result = departments.Value;
 
-			var classOfferings = from cla in db.Classes
-								 where cla.Course.SubjectAbbr == "CS"
-								 && cla.Course.CourseNumber == 5530
-								 select cla;
-
-			Assert.Equal(2, classOfferings.Count());
-			//Assert.Equal("{ }", result);
+			Assert.Equal("{ }", result[0].ToString());
 		}
 
 		/// <summary>
@@ -338,21 +340,5 @@ namespace LMSTester
 
 			Assert.Equal("{ fname = Erin, lname = Parker, uid = u0000010, department = CS }", result.ToString());
 		}
-
-		///// <summary>
-		///// Verifies information retrieved from a professor user
-		///// </summary>
-		//[Fact]
-		//public void CanGetAdminUser()
-		//{
-		//	CommonController common = new CommonController();
-		//	Team55LMSContext db = MakeStudentUser();
-		//	common.UseLMSContext(db);
-
-		//	var adminUser = common.GetUser("u0000003") as JsonResult;
-		//	dynamic result = adminUser.Value;
-
-		//	Assert.Equal("{ fname = admin, lname = admin, uid = u0000003 }", result.ToString());
-		//}
 	}
 }

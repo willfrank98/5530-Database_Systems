@@ -86,7 +86,7 @@ namespace LMS.Controllers
 	///            "cname": The course name (e.g. "Database Systems")
 	/// </summary>
 	/// 
-	/// NOTE:  This method is called when you log in as a student and click "Catalog" 
+	/// NOTE:  This method is called when you log in as a student or admin and click "Catalog" 
 	/// 
 	/// 
 	/// <returns>The JSON array</returns>
@@ -97,21 +97,22 @@ namespace LMS.Controllers
 			var catalog = from depart in db.Departments
 						  select new
 						  {
-							  subject = depart.Name,
-							  dname = depart.SubjectAbbr,
+							  subject = depart.SubjectAbbr,
+							  dname = depart.Name,
 							  courses = from c in db.Courses
 										where c.SubjectAbbr == depart.SubjectAbbr
-									    select new
-									    {
-										    number = c.CourseNumber,
-										    cname = c.Name
-									    }
+										select new
+										{
+											number = c.CourseNumber,
+											cname = c.Name
+										}
 						  };
 
 			return Json(catalog.ToArray());
 		}
-		catch(Exception)
+		catch(Exception e)
 		{
+			Console.WriteLine(e.Message);
 			return Json("");
 		}
 	}
@@ -134,10 +135,12 @@ namespace LMS.Controllers
     {
 		try
 		{
-			//cla.ProfessorNavigation.FirstName and Last Name are null...
 			var classOfferings = from cla in db.Classes
-								 where cla.Course.CourseNumber == number
-								 && cla.Course.SubjectAbbr == subject
+								 join cour in db.Courses on cla.CourseId equals cour.CourseId
+								 into courses
+								 from co in courses.DefaultIfEmpty()
+								 where co.CourseNumber == number
+								 && co.SubjectAbbr == subject
 								 select new
 								 {
 									 season = ExtractSeason(cla.Semester),
@@ -145,9 +148,13 @@ namespace LMS.Controllers
 									 location = cla.Location,
 									 start = cla.Start,
 									 end = cla.End,
-									 fname = cla.ProfessorNavigation.FirstName,
-									 lname = cla.ProfessorNavigation.LastName
-								 };
+									 fname = from prof in db.Professors
+											 where prof.UId == cla.Professor
+											 select prof.FirstName,
+									 lname = from prof in db.Professors
+											 where prof.UId == cla.Professor
+											 select prof.LastName
+			};
 
 			return Json(classOfferings.ToArray());
 		}
@@ -302,15 +309,15 @@ namespace LMS.Controllers
 
 		if(student != null)
 		{
-			return Json(student.FirstOrDefault());
+			return Json(student.First());
 		}
 		else if(professor != null)
 		{
-			return Json(professor.FirstOrDefault());
+			return Json(professor.First());
 		}
 		else if(admin != null)
 		{
-			return Json(professor.FirstOrDefault());
+			return Json(professor.First());
 		}
 
 		return Json(new { success = false });
@@ -323,7 +330,7 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	public static String ExtractSeason(String semester)
 	{
-		return semester.Substring(0, semester.IndexOf(" ") + 1);
+		return semester.Substring(0, semester.IndexOf(" "));
 	}
 
 	/// <summary>

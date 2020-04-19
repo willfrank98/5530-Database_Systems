@@ -63,7 +63,6 @@ namespace LMS.Controllers
     }
 
 
-    
     /// <summary>
     /// Returns a JSON array of all the professors working in a given department.
     /// Each object in the array should have the following fields:
@@ -165,7 +164,7 @@ namespace LMS.Controllers
 				Location = location,
 				Start = start.TimeOfDay,
 				End = end.TimeOfDay,
-				Professor = instructor, 			
+				Professor = instructor, 
 			};
 
 			//Check for same location and same offering for the same course and semester
@@ -232,6 +231,7 @@ namespace LMS.Controllers
 			bool isSameCourse = newClass.Course == c.Course;
 			bool isSameTime = (newClass.Start == c.Start && newClass.End == c.End);
 			bool isSameLocation = (newClass.Location == c.Location);
+			bool hasSameCourse = (newClass.Course == c.Course);
 
 			if(isSameSemester && isSameCourse && isSameTime && isSameLocation)
 			{
@@ -270,12 +270,20 @@ namespace LMS.Controllers
 	/// <returns></returns>
 	private uint GetCourseIDForClass(uint number, String subjectAbbr)
 	{
-		var courseID = from cour in db.Courses
-					   where cour.CourseNumber == number
-					   && cour.SubjectAbbr == subjectAbbr
-					   select cour.CourseId;
+		try
+		{
+			var courseID = from cour in db.Courses
+							where cour.CourseNumber == number
+							&& cour.SubjectAbbr == subjectAbbr
+							select cour.CourseId;
 
-		return courseID.First();
+			return courseID.First();
+		}
+		catch(Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return 0;
+		}
 	}
 
     /*******End code to modify********/
