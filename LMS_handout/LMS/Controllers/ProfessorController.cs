@@ -110,16 +110,16 @@ namespace LMS.Controllers
 			{
 				var students = from stu in db.Students
 							   join enr in db.Enrolled on stu.UId equals enr.UId
-							   into enrolled 
+							   into enrolled
 							   from en in enrolled.DefaultIfEmpty()
 							   join cla in db.Classes on en.ClassId equals cla.ClassId
-							   into classes 
+							   into classes
 							   from c in classes.DefaultIfEmpty()
 							   join cour in db.Courses on c.CourseId equals cour.CourseId
-							   into courses 
+							   into courses
 							   from co in courses.DefaultIfEmpty()
 							   where c.Semester == season + " " + year
-							   && co.CourseNumber == num 
+							   && co.CourseNumber == num
 							   && co.SubjectAbbr == subject
 							   select new
 							   {
@@ -132,7 +132,7 @@ namespace LMS.Controllers
 
 				return Json(students.ToArray());
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(null);
@@ -160,7 +160,7 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				if(category == null)
+				if (category == null)
 				{
 					var allAssignments = from cour in db.Courses
 										 join cla in db.Classes on cour.CourseId equals cla.CourseId
@@ -180,40 +180,40 @@ namespace LMS.Controllers
 										 where c.Semester == season + " " + year
 										 select new
 										 {
-											aname = assi.Name,
-											cname = cat.Name,
-											due = assi.DueDate,
-											submissions = assi.Submission.Count
+											 aname = assi.Name,
+											 cname = cat.Name,
+											 due = assi.DueDate,
+											 submissions = assi.Submission.Count
 										 };
 
 					return Json(allAssignments.ToArray());
 				}
 
 				var allAssignmentsInCategory = from cour in db.Courses
-												join cla in db.Classes on cour.CourseId equals cla.CourseId
-												into classes
-												from c in classes.DefaultIfEmpty()
-												join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
-												into categories
-												from cat in categories.DefaultIfEmpty()
-												join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
-												into assignments
-												from assi in assignments.DefaultIfEmpty()
-												where cour.SubjectAbbr == subject
-												where cour.CourseNumber == num
-												where c.Semester == season + " " + year
-												where category == cat.Name
-												select new
-												{
-													aname = assi.Name,
-													cname = cat.Name,
-													due = assi.DueDate,
-													submissions = assi.Submission.Count
-												};
+											   join cla in db.Classes on cour.CourseId equals cla.CourseId
+											   into classes
+											   from c in classes.DefaultIfEmpty()
+											   join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
+											   into categories
+											   from cat in categories.DefaultIfEmpty()
+											   join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
+											   into assignments
+											   from assi in assignments.DefaultIfEmpty()
+											   where cour.SubjectAbbr == subject
+											   where cour.CourseNumber == num
+											   where c.Semester == season + " " + year
+											   where category == cat.Name
+											   select new
+											   {
+												   aname = assi.Name,
+												   cname = cat.Name,
+												   due = assi.DueDate,
+												   submissions = assi.Submission.Count
+											   };
 
 				return Json(allAssignmentsInCategory.ToArray());
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(null);
@@ -249,13 +249,13 @@ namespace LMS.Controllers
 								  where c.Semester == season + " " + year
 								  select new
 								  {
-										name = a.Name,
-										weight = a.Weight
+									  name = a.Name,
+									  weight = a.Weight
 								  };
 
 				return Json(aCategories.ToArray());
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				return Json(e.Message);
 			}
@@ -281,11 +281,11 @@ namespace LMS.Controllers
 				AssignmentCategories aCat = new AssignmentCategories
 				{
 					ClassId = classIDForAsnCat,
-					Name = category, 
-					Weight = (uint) catweight
+					Name = category,
+					Weight = (uint)catweight
 				};
 
-				if(AssignmentCategoryExists(aCat))
+				if (AssignmentCategoryExists(aCat))
 				{
 					return Json(new { success = false });
 				}
@@ -295,7 +295,7 @@ namespace LMS.Controllers
 
 				return Json(new { success = true });
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(new { success = false });
@@ -321,7 +321,7 @@ namespace LMS.Controllers
 			try
 			{
 				uint aCatID = GetAssignmentCategoryID(category);
-				AssignmentCategories aCat = GetAssignmentCategory(aCatID);
+				//AssignmentCategories aCat = GetAssignmentCategory(aCatID);
 
 				Assignments assignment = new Assignments
 				{
@@ -329,21 +329,34 @@ namespace LMS.Controllers
 					Contents = asgcontents,
 					DueDate = asgdue,
 					Name = asgname,
-					MaxPoints = (uint) asgpoints,
-					AssignCat = aCat
+					MaxPoints = (uint)asgpoints,
+					//AssignCat = aCat
 				};
 
-				if(AssignmentAlreadyExists(assignment))
+				if (AssignmentAlreadyExists(assignment))
 				{
 					return Json(new { success = false });
 				}
 
 				db.Assignments.Add(assignment);
+
+				// update grades for all students in this class
+				uint classID = GetClassID(subject, num, season, year);
+
+				var enrollments = from enr in db.Enrolled
+								  where enr.ClassId == classID
+								  select enr;
+
+				foreach (var enrollment in enrollments)
+				{
+					enrollment.Grade = UpdateGrade(enrollment.UId, classID);
+				}
+
 				db.SaveChanges();
 
 				return Json(new { success = true });
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(new { success = false });
@@ -405,7 +418,7 @@ namespace LMS.Controllers
 
 				return Json(query.ToArray());
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(null);
@@ -429,18 +442,126 @@ namespace LMS.Controllers
 		{
 			try
 			{
+				// add grade to submission
 				uint classID = GetClassID(subject, num, season, year);
 				Submission sub = GetSubmission(classID, category, asgname, uid);
 
-				sub.Score = (uint) score;
+				sub.Score = (uint)score;
+
+				// update student's grade for class
+				var query = from enr in db.Enrolled
+							where enr.ClassId == classID
+							where enr.UId == uid
+							select enr;
+
+
+				var enrollment = query.First();
+				enrollment.Grade = UpdateGrade(uid, classID);
+
 				db.SaveChanges();
 
 				return Json(new { success = true });
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 				return Json(new { success = false });
+			}
+		}
+
+		private string UpdateGrade(string uid, uint classId)
+		{
+			// get all assignment categories for a class
+			var assgncats = from ac in db.AssignmentCategories
+							where ac.ClassId == classId
+							select ac;
+
+			double totalWeight = 0;
+			double totalPointsUnscaled = 0;
+			foreach (var cat in assgncats)
+			{
+				// get all assignments from this category
+				var assgns = from asgn in db.Assignments
+							 where asgn.AssignCatId == cat.AssignCatId
+							 select asgn;
+
+				// sum total possible points and total earned points for this category
+				double totalPossible = 0;
+				double totalEarned = 0;
+				foreach (var asgn in assgns)
+				{
+					// scaling factor for total assignment cat weight
+					// this is here so only categories with assignments are counted
+					totalWeight += cat.Weight;
+
+					totalPossible += (int) asgn.MaxPoints;
+
+					var subQuery = from subs in db.Submission
+								   where subs.AssignmentId == asgn.AssignmentId
+								   where subs.UId == uid
+								   select subs;
+
+					totalEarned += subQuery.Count() > 0 ? (int) subQuery.First().Score : 0;
+				}
+
+				if (assgns.Count() > 0)
+				{
+					totalPointsUnscaled += (totalEarned / totalPossible) * (cat.Weight / 100.0);
+				}
+			}
+
+			var finalPercent = totalPointsUnscaled * (100.0 / totalWeight);
+
+			finalPercent *= 100;
+
+			// convert to letter grade
+			if (finalPercent >= 93)
+			{
+				return "A";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "A-";
+			}
+			else if (finalPercent >= 87)
+			{
+				return "B+";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "B";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "B-";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "C+";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "C";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "C-";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "D+";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "D";
+			}
+			else if (finalPercent >= 90)
+			{
+				return "D-";
+			}
+			else
+			{
+				return "E";
 			}
 		}
 
@@ -471,16 +592,16 @@ namespace LMS.Controllers
 								  from c in classes.DefaultIfEmpty()
 								  select new
 								  {
-										subject = c.SubjectAbbr,
-										number = c.CourseNumber,
-										name = c.Name,
-										season = ExtractSeason(cla.Semester),
-										year = ExtractYear(cla.Semester)
+									  subject = c.SubjectAbbr,
+									  number = c.CourseNumber,
+									  name = c.Name,
+									  season = ExtractSeason(cla.Semester),
+									  year = ExtractYear(cla.Semester)
 								  };
 
 				return Json(profClasses.ToArray());
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				return Json(e.Message);
 			}
@@ -497,9 +618,9 @@ namespace LMS.Controllers
 			var categories = from cat in db.AssignmentCategories
 							 select cat;
 
-			foreach(AssignmentCategories c in categories)
+			foreach (AssignmentCategories c in categories)
 			{
-				if(c.Name.ToLower() == category.Name.ToLower())
+				if (c.Name.ToLower() == category.Name.ToLower())
 				{
 					return true;
 				}
@@ -555,9 +676,9 @@ namespace LMS.Controllers
 								 join assign in db.Assignments on aCat.AssignCatId equals assign.AssignCatId
 								 select assign;
 
-			foreach(Assignments a in allAssignments)
+			foreach (Assignments a in allAssignments)
 			{
-				if(a.Name.ToLower() == assignment.Name.ToLower())
+				if (a.Name.ToLower() == assignment.Name.ToLower())
 				{
 					return true;
 				}
