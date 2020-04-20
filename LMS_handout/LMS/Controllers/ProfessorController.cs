@@ -178,6 +178,8 @@ namespace LMS.Controllers
 										 where cour.SubjectAbbr == subject
 										 where cour.CourseNumber == num
 										 where c.Semester == season + " " + year
+										 where assi.Name != null 
+										 where cat.Name != null
 										 select new
 										 {
 											 aname = assi.Name,
@@ -203,12 +205,14 @@ namespace LMS.Controllers
 											   where cour.CourseNumber == num
 											   where c.Semester == season + " " + year
 											   where category == cat.Name
+											   where assi.Name != null
+											   where cat.Name != null
 											   select new
 											   {
-												   aname = assi.Name,
-												   cname = cat.Name,
-												   due = assi.DueDate,
-												   submissions = assi.Submission.Count
+													aname = assi.Name,
+													cname = cat.Name,
+													due = assi.DueDate,
+													submissions = assi.Submission.Count
 											   };
 
 				return Json(allAssignmentsInCategory.ToArray());
@@ -616,6 +620,7 @@ namespace LMS.Controllers
 		private bool AssignmentCategoryExists(AssignmentCategories category)
 		{
 			var categories = from cat in db.AssignmentCategories
+							 where cat.Name == category.Name
 							 select cat;
 
 			foreach (AssignmentCategories c in categories)

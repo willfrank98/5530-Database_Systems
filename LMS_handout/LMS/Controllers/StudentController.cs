@@ -202,14 +202,14 @@ namespace LMS.Controllers
 
 				var assgnId = query.First().id;
 
-				var query2 = from sub in db.Submission
-							 where sub.AssignmentId == assgnId
-							 where sub.UId == uid
-							 select
-							 new
-							 {
-								 id = sub.AssignmentId
-							 };
+				var prevSubmission = from sub in db.Submission
+									 where sub.AssignmentId == assgnId
+									 where sub.UId == uid
+									 select
+									 new
+									 {
+										 id = sub.AssignmentId
+									 };
 
 				Submission submission = new Submission
 				{
@@ -220,7 +220,7 @@ namespace LMS.Controllers
 				};
 
 				// update old submission
-				if (query2.Count() > 0)
+				if (prevSubmission.Count() > 0)
 				{
 					db.Submission.Update(submission);
 				}
