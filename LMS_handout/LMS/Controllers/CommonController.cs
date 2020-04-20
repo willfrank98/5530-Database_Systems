@@ -85,10 +85,6 @@ namespace LMS.Controllers
 	///            "number": The course number (e.g. 5530)
 	///            "cname": The course name (e.g. "Database Systems")
 	/// </summary>
-	/// 
-	/// NOTE:  This method is called when you log in as a student or admin and click "Catalog" 
-	/// 
-	/// 
 	/// <returns>The JSON array</returns>
 	public IActionResult GetCatalog()
 	{

@@ -236,10 +236,16 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				var aCategories = from cla in db.Classes
-								  join aCat in db.AssignmentCategories on cla.ClassId equals aCat.ClassId
+				var aCategories = from cour in db.Courses
+								  join cla in db.Classes on cour.CourseId equals cla.CourseId
+								  into classes
+								  from c in classes.DefaultIfEmpty()
+								  join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
 								  into aCats
 								  from a in aCats.DefaultIfEmpty()
+								  where cour.SubjectAbbr == subject
+								  where cour.CourseNumber == num
+								  where c.Semester == season + " " + year
 								  select new
 								  {
 										name = a.Name,
@@ -314,6 +320,7 @@ namespace LMS.Controllers
 			try
 			{
 				uint aCatID = GetAssignmentCategoryID(category);
+				AssignmentCategories aCat = GetAssignmentCategory(aCatID);
 
 				Assignments assignment = new Assignments
 				{
@@ -321,7 +328,8 @@ namespace LMS.Controllers
 					Contents = asgcontents,
 					DueDate = asgdue,
 					Name = asgname,
-					MaxPoints = (uint) asgpoints
+					MaxPoints = (uint) asgpoints,
+					AssignCat = aCat
 				};
 
 				if(AssignmentAlreadyExists(assignment))
@@ -532,14 +540,11 @@ namespace LMS.Controllers
 		/// <returns></returns>
 		private bool AssignmentAlreadyExists(Assignments assignment)
 		{
-			var assignments = from assign in db.Assignments
-							  join aCat in db.AssignmentCategories on assign.AssignCatId equals aCat.AssignCatId
-							  into categories
-							  from ca in categories.DefaultIfEmpty()
-							  where assign.AssignCatId == assignment.AssignCatId
-							  select assign;
+			var allAssignments = from aCat in db.AssignmentCategories
+								 join assign in db.Assignments on aCat.AssignCatId equals assign.AssignCatId
+								 select assign;
 
-			foreach(Assignments a in assignments)
+			foreach(Assignments a in allAssignments)
 			{
 				if(a.Name.ToLower() == assignment.Name.ToLower())
 				{
@@ -548,6 +553,20 @@ namespace LMS.Controllers
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Helper for getting the corresponding assignment category for an 
+		/// assignment
+		/// </summary>
+		/// <returns></returns>
+		private AssignmentCategories GetAssignmentCategory(uint aCatId)
+		{
+			var aCat = from ac in db.AssignmentCategories
+					   where ac.AssignCatId == aCatId
+					   select ac;
+
+			return aCat.First();
 		}
 
 		/*******End code to modify********/

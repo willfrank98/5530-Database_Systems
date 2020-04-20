@@ -221,14 +221,6 @@ namespace LMS.Controllers
 											enr.U
 										};
 
-			var grade = from enr in db.Enrolled
-						where enr.ClassId == classID
-						&& enr.UId == uid
-						select new
-						{
-							enr.Grade
-						};
-
 			if (classID != null && !alreadyEnrolledCourse.Any())
 			{ 
 					Enrolled enroll = new Enrolled
