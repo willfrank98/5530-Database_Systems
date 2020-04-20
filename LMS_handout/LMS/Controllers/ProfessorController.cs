@@ -165,12 +165,15 @@ namespace LMS.Controllers
 					var allAssignments = from cour in db.Courses
 										 join cla in db.Classes on cour.CourseId equals cla.CourseId
 										 into classes
+
 										 from c in classes.DefaultIfEmpty()
 										 join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
 										 into categories
+
 										 from cat in categories.DefaultIfEmpty()
 										 join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
 										 into assignments
+
 										 from assi in assignments.DefaultIfEmpty()
 										 where cour.SubjectAbbr == subject
 										 where cour.CourseNumber == num
@@ -180,37 +183,35 @@ namespace LMS.Controllers
 											aname = assi.Name,
 											cname = cat.Name,
 											due = assi.DueDate,
-											submissions = 0
+											submissions = assi.Submission.Count
 										 };
 
 					return Json(allAssignments.ToArray());
 				}
-				else
-				{
-					var allAssignmentsInCategory = from cour in db.Courses
-												   join cla in db.Classes on cour.CourseId equals cla.CourseId
-												   into classes
-												   from c in classes.DefaultIfEmpty()
-												   join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
-												   into categories
-												   from cat in categories.DefaultIfEmpty()
-												   join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
-												   into assignments
-												   from assi in assignments.DefaultIfEmpty()
-												   where cour.SubjectAbbr == subject
-												   where cour.CourseNumber == num
-												   where c.Semester == season + " " + year
-												   where category == cat.Name
-												   select new
-												   {
-														aname = assi.Name,
-														cname = cat.Name,
-														due = assi.DueDate,
-														submissions = 0
-												   };
 
-					return Json(allAssignmentsInCategory.ToArray());
-				}
+				var allAssignmentsInCategory = from cour in db.Courses
+												join cla in db.Classes on cour.CourseId equals cla.CourseId
+												into classes
+												from c in classes.DefaultIfEmpty()
+												join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
+												into categories
+												from cat in categories.DefaultIfEmpty()
+												join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
+												into assignments
+												from assi in assignments.DefaultIfEmpty()
+												where cour.SubjectAbbr == subject
+												where cour.CourseNumber == num
+												where c.Semester == season + " " + year
+												where category == cat.Name
+												select new
+												{
+													aname = assi.Name,
+													cname = cat.Name,
+													due = assi.DueDate,
+													submissions = assi.Submission.Count
+												};
+
+				return Json(allAssignmentsInCategory.ToArray());
 			}
 			catch(Exception e)
 			{
@@ -422,7 +423,11 @@ namespace LMS.Controllers
 		{
 			try
 			{
+				uint classID = GetClassID(subject, num, season, year);
+				Submission sub = GetSubmission(classID, category, asgname, uid);
 
+				sub.Score = (uint) score;
+				db.SaveChanges();
 
 				return Json(new { success = true });
 			}
@@ -567,6 +572,28 @@ namespace LMS.Controllers
 					   select ac;
 
 			return aCat.First();
+		}
+
+		/// <summary>
+		/// Helper for getting a specific student's submission to an assignment
+		/// </summary>
+		/// <returns></returns>
+		private Submission GetSubmission(uint classID, String category, String asgname, String uid)
+		{
+			var submission = from aCat in db.AssignmentCategories
+							 join assign in db.Assignments on aCat.AssignCatId equals assign.AssignCatId
+							 into assignments
+							 from a in assignments.DefaultIfEmpty()
+							 join sub in db.Submission on a.AssignmentId equals sub.AssignmentId
+							 into submissions
+							 from s in submissions.DefaultIfEmpty()
+							 where aCat.ClassId == classID
+							 where aCat.Name == category
+							 where a.Name == asgname
+							 where s.UId == uid
+							 select s;
+
+			return submission.First();
 		}
 
 		/*******End code to modify********/

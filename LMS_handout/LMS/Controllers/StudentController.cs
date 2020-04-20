@@ -187,6 +187,9 @@ namespace LMS.Controllers
 				Contents = contents,	
 			};
 
+			db.Submission.Add(submission);
+			db.SaveChanges();
+
 			return Json(new { success = true });
 		}
 		catch(Exception e)
