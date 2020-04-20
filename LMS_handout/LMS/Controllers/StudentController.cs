@@ -58,42 +58,42 @@ namespace LMS.Controllers
 
 		/*******Begin code to modify********/
 
-    /// <summary>
-    /// Returns a JSON array of the classes the given student is enrolled in.
-    /// Each object in the array should have the following fields:
-    /// "subject" - The subject abbreviation of the class (such as "CS")
-    /// "number" - The course number (such as 5530)
-    /// "name" - The course name
-    /// "season" - The season part of the semester
-    /// "year" - The year part of the semester
-    /// "grade" - The grade earned in the class, or "--" if one hasn't been assigned
-    /// </summary>
-    /// <param name="uid">The uid of the student</param>
-    /// <returns>The JSON array</returns>
-    public IActionResult GetMyClasses(string uid)
-    {
-		try
+		/// <summary>
+		/// Returns a JSON array of the classes the given student is enrolled in.
+		/// Each object in the array should have the following fields:
+		/// "subject" - The subject abbreviation of the class (such as "CS")
+		/// "number" - The course number (such as 5530)
+		/// "name" - The course name
+		/// "season" - The season part of the semester
+		/// "year" - The year part of the semester
+		/// "grade" - The grade earned in the class, or "--" if one hasn't been assigned
+		/// </summary>
+		/// <param name="uid">The uid of the student</param>
+		/// <returns>The JSON array</returns>
+		public IActionResult GetMyClasses(string uid)
 		{
-			var classes = from stu in db.Students
-						  join en in db.Enrolled on stu.UId equals en.UId
-						  into enrolled
-						  from enr in enrolled.DefaultIfEmpty()
-						  join cla in db.Classes on enr.ClassId equals cla.ClassId
-						  into enJoinCla
-						  from clas in enJoinCla.DefaultIfEmpty()
-						  join cour in db.Courses on clas.CourseId equals cour.CourseId
-						  into courses
-						  from c in courses.DefaultIfEmpty()
-						  where stu.UId == uid
-						  select new
-						  {
-							  subject = c.SubjectAbbr,
-							  number = c.CourseNumber,
-							  name = c.Name,
-							  season = ExtractSeason(clas.Semester),
-							  year = ExtractYear(clas.Semester),
-							  grade = enr.Grade
-						  };	
+			try
+			{
+				var classes = from stu in db.Students
+							  join en in db.Enrolled on stu.UId equals en.UId
+							  into enrolled
+							  from enr in enrolled.DefaultIfEmpty()
+							  join cla in db.Classes on enr.ClassId equals cla.ClassId
+							  into enJoinCla
+							  from clas in enJoinCla.DefaultIfEmpty()
+							  join cour in db.Courses on clas.CourseId equals cour.CourseId
+							  into courses
+							  from c in courses.DefaultIfEmpty()
+							  where stu.UId == uid
+							  select new
+							  {
+								  subject = c.SubjectAbbr,
+								  number = c.CourseNumber,
+								  name = c.Name,
+								  season = ExtractSeason(clas.Semester),
+								  year = ExtractYear(clas.Semester),
+								  grade = enr.Grade
+							  };
 
 				return Json(classes.ToArray());
 			}
@@ -104,46 +104,45 @@ namespace LMS.Controllers
 			}
 		}
 
-    /// <summary>
-    /// Returns a JSON array of all the assignments in the given class that the given student is enrolled in.
-    /// Each object in the array should have the following fields:
-    /// "aname" - The assignment name
-    /// "cname" - The category name that the assignment belongs to
-    /// "due" - The due Date/Time
-    /// "score" - The score earned by the student, or null if the student has not submitted to this assignment.
-    /// </summary>
-    /// <param name="subject">The course subject abbreviation</param>
-    /// <param name="num">The course number</param>
-    /// <param name="season">The season part of the semester for the class the assignment belongs to</param>
-    /// <param name="year">The year part of the semester for the class the assignment belongs to</param>
-    /// <param name="uid"></param>
-    /// <returns>The JSON array</returns>
-    public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
-    {     
-		try
+		/// <summary>
+		/// Returns a JSON array of all the assignments in the given class that the given student is enrolled in.
+		/// Each object in the array should have the following fields:
+		/// "aname" - The assignment name
+		/// "cname" - The category name that the assignment belongs to
+		/// "due" - The due Date/Time
+		/// "score" - The score earned by the student, or null if the student has not submitted to this assignment.
+		/// </summary>
+		/// <param name="subject">The course subject abbreviation</param>
+		/// <param name="num">The course number</param>
+		/// <param name="season">The season part of the semester for the class the assignment belongs to</param>
+		/// <param name="year">The year part of the semester for the class the assignment belongs to</param>
+		/// <param name="uid"></param>
+		/// <returns>The JSON array</returns>
+		public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
 		{
-			var query = from cour in db.Courses
-						join cla in db.Classes on cour.CourseId equals cla.CourseId
-						into classes 
-						from c in classes.DefaultIfEmpty()
-						join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
-						into assignCategories 
-						from a in assignCategories.DefaultIfEmpty() 
-						join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
-						into assignments 
-						from assi in assignments.DefaultIfEmpty()
-						where cour.SubjectAbbr == subject
-						where cour.CourseNumber == (uint) num
-						where c.Semester == season + " " + year
-						where c.Professor == uid
-						select 
-						new
-						{
-							aname = assi.Name,
-							cname = a.Name,
-							due = assi.DueDate,
-							score = "--" 
-						};
+			try
+			{
+				var query = from cour in db.Courses
+							join cla in db.Classes on cour.CourseId equals cla.CourseId
+							into classes
+							from c in classes.DefaultIfEmpty()
+							join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
+							into assignCategories
+							from a in assignCategories.DefaultIfEmpty()
+							join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
+							into assignments
+							from assi in assignments.DefaultIfEmpty()
+							where cour.SubjectAbbr == subject
+							where cour.CourseNumber == (uint)num
+							where c.Semester == season + " " + year
+							select
+							new
+							{
+								aname = assi.Name,
+								cname = a.Name,
+								due = assi.DueDate,
+								score = "--"
+							};
 
 				return Json(query.ToArray());
 			}
@@ -177,18 +176,40 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				var query = from asCat in db.AssignmentCategories
-							select asCat;
+				var query = from cour in db.Courses
+							join cla in db.Classes on cour.CourseId equals cla.CourseId
+							into classes
+							from c in classes.DefaultIfEmpty()
+							join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
+							into assignCategories
+							from a in assignCategories.DefaultIfEmpty()
+							join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
+							into assignments
+							from assi in assignments.DefaultIfEmpty()
+							where cour.SubjectAbbr == subject
+							where cour.CourseNumber == (uint)num
+							where c.Semester == season + " " + year
+							where a.Name == category
+							where assi.Name == asgname
+							select
+							new
+							{
+								id = assi.AssignmentId
+							};
 
-			Submission submission = new Submission
-			{
-				UId = uid,
-				Time = DateTime.Now,
-				Contents = contents,	
-			};
+				var assgnId = query.First().id;
 
-			db.Submission.Add(submission);
-			db.SaveChanges();
+				Submission submission = new Submission
+				{
+					AssignmentId = assgnId,
+					UId = uid,
+					Score = 0,
+					Contents = contents,
+					Time = DateTime.Now,
+				};
+
+				db.Submission.Add(submission);
+				db.SaveChanges();
 
 				return Json(new { success = true });
 			}
@@ -224,8 +245,8 @@ namespace LMS.Controllers
 												enr.U
 											};
 
-			if (classID != null && !alreadyEnrolledCourse.Any())
-			{ 
+				if (classID != null && !alreadyEnrolledCourse.Any())
+				{
 					Enrolled enroll = new Enrolled
 					{
 						UId = uid,
@@ -334,9 +355,9 @@ namespace LMS.Controllers
 				}
 				else
 				{
-					return Json(new { gpa = totalGrade/total });
+					return Json(new { gpa = totalGrade / total });
 				}
-				
+
 			}
 			catch (Exception e)
 			{
@@ -345,24 +366,24 @@ namespace LMS.Controllers
 			}
 		}
 
-	/// <summary>
-	/// Helper for finding classID before enrolling a student
-	/// </summary>
-	/// <param name="subject"></param>
-	/// <param name="num"></param>
-	/// <param name="season"></param>
-	/// <param name="year"></param>
-	/// <returns></returns>
-	private uint? FindClassID(string subject, int num, string season, int year)
-	{
-		var query = from cla in db.Classes
-					join cour in db.Courses on cla.CourseId equals cour.CourseId
-					where cla.Semester == season + " " + year
-					&& cour.CourseNumber == num && cour.SubjectAbbr == subject
-					select new
-					{
-						cla.ClassId
-					};
+		/// <summary>
+		/// Helper for finding classID before enrolling a student
+		/// </summary>
+		/// <param name="subject"></param>
+		/// <param name="num"></param>
+		/// <param name="season"></param>
+		/// <param name="year"></param>
+		/// <returns></returns>
+		private uint? FindClassID(string subject, int num, string season, int year)
+		{
+			var query = from cla in db.Classes
+						join cour in db.Courses on cla.CourseId equals cour.CourseId
+						where cla.Semester == season + " " + year
+						&& cour.CourseNumber == num && cour.SubjectAbbr == subject
+						select new
+						{
+							cla.ClassId
+						};
 
 			return query.Any() ? query.ToArray()[0].ClassId : (uint?)null;
 		}

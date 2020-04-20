@@ -186,15 +186,10 @@ namespace LMS.Controllers
 								 from classes in catJoinClasses.DefaultIfEmpty()
 								 select new
 								 {
-									 subject = classes.ProfessorNavigation.Department,
-									 num = classes.Course.CourseNumber,
-									 season = ExtractSeason(classes.Semester),
-									 year = ExtractYear(classes.Semester),
-									 category = cat.Name,
-									 asgname = assign.Name
+									 contents = assign.Contents
 								 };
 
-			return Content(assignContents.ToString());
+			return Content(assignContents.First().contents);
 		}
 		catch(Exception e)
 		{
@@ -233,21 +228,22 @@ namespace LMS.Controllers
 								 from classes in catJoinClasses.DefaultIfEmpty()
 								 select new
 								 {
-									 subject = classes.Course.SubjectAbbr,
-									 num = classes.Course.CourseNumber,
-									 season = ExtractSeason(classes.Semester),
-									 year = ExtractYear(classes.Semester),
-									 category = cat.Name,
-									 asgname = assign.Name,
-									 uid = sub.UId
+									 //subject = classes.Course.SubjectAbbr,
+									 //num = classes.Course.CourseNumber,
+									 //season = ExtractSeason(classes.Semester),
+									 //year = ExtractYear(classes.Semester),
+									 //category = cat.Name,
+									 //asgname = assign.Name,
+									 //uid = sub.UId
+									 submission = sub.Contents
 								 };
 
-			if (submissionText != null)
+			if (submissionText.Count() > 0)
 			{
-				return Content(submissionText.ToString());
+				return Content(submissionText.First().submission);
 			}
 
-			return Content("");
+			return Content("No Submission Found");
 		}
 		catch(Exception e)
 		{
