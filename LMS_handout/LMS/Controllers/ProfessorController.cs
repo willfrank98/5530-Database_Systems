@@ -178,38 +178,42 @@ namespace LMS.Controllers
 										 where cour.SubjectAbbr == subject
 										 where cour.CourseNumber == num
 										 where c.Semester == season + " " + year
+										 where assi.Name != null 
+										 where cat.Name != null
 										 select new
 										 {
-											aname = assi.Name,
-											cname = cat.Name,
-											due = assi.DueDate,
-											submissions = assi.Submission.Count
+											 aname = assi.Name,
+											 cname = cat.Name,
+											 due = assi.DueDate,
+											 submissions = assi.Submission.Count
 										 };
 
 					return Json(allAssignments.ToArray());
 				}
 
 				var allAssignmentsInCategory = from cour in db.Courses
-												join cla in db.Classes on cour.CourseId equals cla.CourseId
-												into classes
-												from c in classes.DefaultIfEmpty()
-												join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
-												into categories
-												from cat in categories.DefaultIfEmpty()
-												join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
-												into assignments
-												from assi in assignments.DefaultIfEmpty()
-												where cour.SubjectAbbr == subject
-												where cour.CourseNumber == num
-												where c.Semester == season + " " + year
-												where category == cat.Name
-												select new
-												{
+											   join cla in db.Classes on cour.CourseId equals cla.CourseId
+											   into classes
+											   from c in classes.DefaultIfEmpty()
+											   join aCat in db.AssignmentCategories on c.ClassId equals aCat.ClassId
+											   into categories
+											   from cat in categories.DefaultIfEmpty()
+											   join assign in db.Assignments on cat.AssignCatId equals assign.AssignCatId
+											   into assignments
+											   from assi in assignments.DefaultIfEmpty()
+											   where cour.SubjectAbbr == subject
+											   where cour.CourseNumber == num
+											   where c.Semester == season + " " + year
+											   where category == cat.Name
+											   where assi.Name != null
+											   where cat.Name != null
+											   select new
+											   {
 													aname = assi.Name,
 													cname = cat.Name,
 													due = assi.DueDate,
 													submissions = assi.Submission.Count
-												};
+											   };
 
 				return Json(allAssignmentsInCategory.ToArray());
 			}
@@ -495,6 +499,7 @@ namespace LMS.Controllers
 		private bool AssignmentCategoryExists(AssignmentCategories category)
 		{
 			var categories = from cat in db.AssignmentCategories
+							 where cat.Name == category.Name
 							 select cat;
 
 			foreach(AssignmentCategories c in categories)
