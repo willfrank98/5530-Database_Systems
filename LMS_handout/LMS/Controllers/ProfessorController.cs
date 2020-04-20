@@ -372,32 +372,38 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				var submissionsToAssignment = from cour in db.Courses
-											  join cla in db.Classes on cour.CourseId equals cla.CourseId
-											  into classes
-											  from cl in classes.DefaultIfEmpty()
-											  join aCat in db.AssignmentCategories on cl.ClassId equals aCat.ClassId
-											  into categories
-											  from ca in categories.DefaultIfEmpty()
-											  join assign in db.Assignments on ca.AssignCatId equals assign.AssignCatId
-											  into assignments
-											  from assi in assignments.DefaultIfEmpty()
-											  join sub in db.Submission on assi.AssignmentId equals sub.AssignmentId
-											  into submissions
-											  from submis in submissions.DefaultIfEmpty()
-											  join stu in db.Students on submis.UId equals stu.UId
-											  into students
-											  from stu in students.DefaultIfEmpty()
-											  select new
-											  {
-												  fname = stu.FirstName,
-												  lname = stu.LastName,
-												  uid = stu.UId,
-												  time = submis.Time,
-												  score = submis.Score
-											  };
+				var query = from cour in db.Courses
+							join cla in db.Classes on cour.CourseId equals cla.CourseId
+							into classes
+							from c in classes.DefaultIfEmpty()
+							join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
+							into assignCategories
+							from a in assignCategories.DefaultIfEmpty()
+							join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
+							into assignments
+							from assi in assignments.DefaultIfEmpty()
+							join sub in db.Submission on assi.AssignmentId equals sub.AssignmentId
+							into submissions
+							from submis in submissions.DefaultIfEmpty()
+							join stu in db.Students on submis.UId equals stu.UId
+							into students
+							from stu in students.DefaultIfEmpty()
+							where cour.SubjectAbbr == subject
+							where cour.CourseNumber == (uint)num
+							where c.Semester == season + " " + year
+							where a.Name == category
+							where assi.Name == asgname
+							select
+							new
+							{
+								fname = stu.FirstName,
+								lname = stu.LastName,
+								uid = stu.UId,
+								time = submis.Time,
+								score = submis.Score
+							};
 
-				return Json(submissionsToAssignment.ToArray());
+				return Json(query.ToArray());
 			}
 			catch(Exception e)
 			{
