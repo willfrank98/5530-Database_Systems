@@ -138,8 +138,8 @@ namespace LMSTester
 
 			Classes dbFall2020Morning = new Classes
 			{
-				ClassId = 0,
-				CourseId = 1,
+				ClassId = 4,
+				CourseId = 0,
 				Semester = "Fall 2020",
 				Location = "WEB L104",
 				Start = TimeSpan.Parse("10:45:00"),
@@ -149,8 +149,8 @@ namespace LMSTester
 
 			Classes dbFall2020Evening = new Classes
 			{
-				ClassId = 0,
-				CourseId = 2,
+				ClassId = 5,
+				CourseId = 0,
 				Semester = "Fall 2020",
 				Location = "WEB L104",
 				Start = TimeSpan.Parse("17:00:00"),
@@ -298,7 +298,7 @@ namespace LMSTester
 			var departments = common.GetClassOfferings("CS", 5530) as JsonResult;
 			dynamic result = departments.Value;
 
-			Assert.Equal("{ }", result[0].ToString());
+			Assert.Equal("{ }", result.ToString());
 		}
 
 		/// <summary>
