@@ -132,6 +132,9 @@ namespace LMS.Controllers
 							join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
 							into assignments
 							from assi in assignments.DefaultIfEmpty()
+							join sub in db.Submission on assi.AssignmentId equals sub.AssignmentId
+							into submissions
+							from submis in submissions.DefaultIfEmpty()
 							where cour.SubjectAbbr == subject
 							where cour.CourseNumber == (uint)num
 							where c.Semester == season + " " + year
@@ -141,7 +144,7 @@ namespace LMS.Controllers
 								aname = assi.Name,
 								cname = a.Name,
 								due = assi.DueDate,
-								score = "--"
+								score = submis.Score
 							};
 
 				return Json(query.ToArray());
@@ -199,16 +202,34 @@ namespace LMS.Controllers
 
 				var assgnId = query.First().id;
 
+				var query2 = from sub in db.Submission
+							 where sub.AssignmentId == assgnId
+							 where sub.UId == uid
+							 select
+							 new
+							 {
+								 id = sub.AssignmentId
+							 };
+
 				Submission submission = new Submission
 				{
 					AssignmentId = assgnId,
 					UId = uid,
-					Score = 0,
 					Contents = contents,
 					Time = DateTime.Now,
 				};
 
-				db.Submission.Add(submission);
+				// update old submission
+				if (query2.Count() > 0)
+				{
+					db.Submission.Update(submission);
+				}
+				// add new submission
+				else
+				{
+					db.Submission.Add(submission);
+				}
+
 				db.SaveChanges();
 
 				return Json(new { success = true });
