@@ -211,11 +211,11 @@ namespace LMS.Controllers
 
 					return Json(allAssignmentsInCategory.ToArray());
 				}
-
 			}
 			catch(Exception e)
 			{
-				return Json(e.Message);
+				Console.WriteLine(e.Message);
+				return Json(null);
 			}
 		}
 
@@ -533,11 +533,21 @@ namespace LMS.Controllers
 		private bool AssignmentAlreadyExists(Assignments assignment)
 		{
 			var assignments = from assign in db.Assignments
+							  join aCat in db.AssignmentCategories on assign.AssignCatId equals aCat.AssignCatId
+							  into categories
+							  from ca in categories.DefaultIfEmpty()
 							  where assign.AssignCatId == assignment.AssignCatId
-							  where assign.Name == assignment.Name
 							  select assign;
 
-			return assignments.Any();
+			foreach(Assignments a in assignments)
+			{
+				if(a.Name.ToLower() == assignment.Name.ToLower())
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/*******End code to modify********/

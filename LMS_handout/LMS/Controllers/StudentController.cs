@@ -80,10 +80,10 @@ namespace LMS.Controllers
 						  from enr in enrolled.DefaultIfEmpty()
 						  join cla in db.Classes on enr.ClassId equals cla.ClassId
 						  into enJoinCla
-						  from clas in enJoinCla.Distinct()
+						  from clas in enJoinCla.DefaultIfEmpty()
 						  join cour in db.Courses on clas.CourseId equals cour.CourseId
 						  into courses
-						  from c in courses.Distinct()
+						  from c in courses.DefaultIfEmpty()
 						  where stu.UId == uid
 						  select new
 						  {
@@ -122,13 +122,20 @@ namespace LMS.Controllers
     {     
 		try
 		{
-			var query = from cla in db.Classes
-						join assignCat in db.AssignmentCategories on cla.ClassId equals assignCat.ClassId
+			var query = from cour in db.Courses
+						join cla in db.Classes on cour.CourseId equals cla.CourseId
+						into classes 
+						from c in classes.DefaultIfEmpty()
+						join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
 						into assignCategories 
 						from a in assignCategories.DefaultIfEmpty() 
 						join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
 						into assignments 
 						from assi in assignments.DefaultIfEmpty()
+						where cour.SubjectAbbr == subject
+						where cour.CourseNumber == (uint) num
+						where c.Semester == season + " " + year
+						where c.Professor == uid
 						select 
 						new
 						{

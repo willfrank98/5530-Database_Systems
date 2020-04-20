@@ -58,6 +58,14 @@ namespace LMSTester
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
+			Courses course = new Courses
+			{
+				CourseId = 0,
+				CourseNumber =  1210,
+				SubjectAbbr = "CHEM", 
+				Name = "Organic Chemistry"
+			};
+
 			Classes chemistry1210 = new Classes
 			{
 				ClassId = 0,
@@ -79,7 +87,12 @@ namespace LMSTester
 			};
 
 			db.Students.Add(one);
+			db.Courses.Add(course);
 			db.Classes.Add(chemistry1210);
+
+			StudentController studController = new StudentController();
+			studController.Enroll("CHEM", 1210, "Summer", 2020, "u0000001");
+
 			db.SaveChanges();
 
 			return db;
@@ -97,6 +110,14 @@ namespace LMSTester
 			optionsBuilder.UseInMemoryDatabase("class_with_one_student_diff_major").UseApplicationServiceProvider(NewServiceProvider());
 
 			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
+
+			Courses course = new Courses
+			{
+				CourseId = 0,
+				CourseNumber = 1210,
+				Name = "Organic Chemistry",
+				SubjectAbbr = "CHEM",
+			};
 
 			Classes chemistry1210 = new Classes
 			{
@@ -119,7 +140,12 @@ namespace LMSTester
 			};
 
 			db.Students.Add(one);
+			db.Courses.Add(course);
 			db.Classes.Add(chemistry1210);
+
+			StudentController studentController = new StudentController();
+			studentController.Enroll("CHEM", 1210, "Summer", 2020, "u0000001");
+
 			db.SaveChanges();
 
 			return db;
