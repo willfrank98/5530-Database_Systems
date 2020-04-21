@@ -451,6 +451,7 @@ namespace LMS.Controllers
 				Submission sub = GetSubmission(classID, category, asgname, uid);
 
 				sub.Score = (uint)score;
+				//db.SaveChanges();
 
 				// update student's grade for class
 				var query = from enr in db.Enrolled
@@ -489,15 +490,17 @@ namespace LMS.Controllers
 							 where asgn.AssignCatId == cat.AssignCatId
 							 select asgn;
 
+				if (assgns.Any())
+				{
+					// scaling factor for total assignment cat weight
+					totalWeight += cat.Weight;
+				}
+
 				// sum total possible points and total earned points for this category
 				double totalPossible = 0;
 				double totalEarned = 0;
 				foreach (var asgn in assgns)
 				{
-					// scaling factor for total assignment cat weight
-					// this is here so only categories with assignments are counted
-					totalWeight += cat.Weight;
-
 					totalPossible += (int) asgn.MaxPoints;
 
 					var subQuery = from subs in db.Submission
@@ -505,7 +508,7 @@ namespace LMS.Controllers
 								   where subs.UId == uid
 								   select subs;
 
-					totalEarned += subQuery.Count() > 0 ? (int) subQuery.First().Score : 0;
+					totalEarned += (subQuery.Any() && subQuery.First().Score != null) ? (int) subQuery.First().Score : 0;
 				}
 
 				if (assgns.Count() > 0)
@@ -531,35 +534,35 @@ namespace LMS.Controllers
 			{
 				return "B+";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 83)
 			{
 				return "B";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 80)
 			{
 				return "B-";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 77)
 			{
 				return "C+";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 73)
 			{
 				return "C";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 70)
 			{
 				return "C-";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 67)
 			{
 				return "D+";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 63)
 			{
 				return "D";
 			}
-			else if (finalPercent >= 90)
+			else if (finalPercent >= 60)
 			{
 				return "D-";
 			}
