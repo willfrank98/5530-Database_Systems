@@ -336,7 +336,7 @@ namespace LMS.Controllers
 					MaxPoints = (uint)asgpoints,
 				};
 
-				if (AssignmentAlreadyExists(assignment))
+				if (AssignmentAlreadyExists(assignment, aCatID))
 				{
 					return Json(new { success = false });
 				}
@@ -687,10 +687,11 @@ namespace LMS.Controllers
 		/// </summary>
 		/// <param name="assignment"></param>
 		/// <returns></returns>
-		private bool AssignmentAlreadyExists(Assignments assignment)
+		private bool AssignmentAlreadyExists(Assignments assignment, uint aCatID)
 		{
 			var allAssignments = from aCat in db.AssignmentCategories
 								 join assign in db.Assignments on aCat.AssignCatId equals assign.AssignCatId
+								 where aCat.AssignCatId == aCatID
 								 select assign;
 
 			foreach (Assignments a in allAssignments)
