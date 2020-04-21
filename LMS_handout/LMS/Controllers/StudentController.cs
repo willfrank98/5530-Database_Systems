@@ -6,6 +6,7 @@ using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
+using System.Dynamic;
 
 // For referencing LMSTester
 [assembly: InternalsVisibleTo("LMSTester")]
@@ -122,32 +123,52 @@ namespace LMS.Controllers
 		{
 			try
 			{
-				var query = from cour in db.Courses
-							join cla in db.Classes on cour.CourseId equals cla.CourseId
-							into classes
-							from c in classes.DefaultIfEmpty()
-							join assignCat in db.AssignmentCategories on c.ClassId equals assignCat.ClassId
-							into assignCategories
-							from a in assignCategories.DefaultIfEmpty()
-							join assignm in db.Assignments on a.AssignCatId equals assignm.AssignCatId
-							into assignments
-							from assi in assignments.DefaultIfEmpty()
-							join sub in db.Submission on assi.AssignmentId equals sub.AssignmentId
-							into submissions
-							from submis in submissions.DefaultIfEmpty()
-							where cour.SubjectAbbr == subject
-							where cour.CourseNumber == (uint)num
-							where c.Semester == season + " " + year
-							select
-							new
+				var classId = FindClassID(subject, num, season, year);
+
+				// get all assignments for the class
+				var query = from clas in db.Classes
+							join ac in db.AssignmentCategories on clas.ClassId equals ac.ClassId
+							join asg in db.Assignments on ac.AssignCatId equals asg.AssignCatId
+							where clas.ClassId == classId
+							select new
 							{
-								aname = assi.Name,
-								cname = a.Name,
-								due = assi.DueDate,
-								score = submis.Score
+								aname = asg.Name,
+								cname = ac.Name,
+								due = asg.DueDate,
+								id = asg.AssignmentId
 							};
 
-				return Json(query.ToArray());
+
+				// get grades for each assignment
+				var ret = new List<ExpandoObject>();
+				foreach (var assignment in query)
+				{
+					var scoreQuery = from subs in db.Submission
+									 where subs.UId == uid
+									 where subs.AssignmentId == assignment.id
+									 select new
+									 {
+										 score = subs.Score
+									 };
+
+					dynamic temp = new ExpandoObject();
+					temp.aname = assignment.aname;
+					temp.cname = assignment.cname;
+					temp.due = assignment.due;
+
+					if (scoreQuery.Any())
+					{
+						temp.score = scoreQuery.FirstOrDefault().score;
+					}
+					else
+					{
+						temp.score = null;
+					}
+
+					ret.Add(temp);
+				}
+
+				return Json(ret.ToArray());
 			}
 			catch (Exception e)
 			{
