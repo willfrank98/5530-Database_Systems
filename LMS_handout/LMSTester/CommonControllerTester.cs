@@ -70,54 +70,6 @@ namespace LMSTester
 		}
 
 		/// <summary>
-		/// Helper for making a database with some catalogs
-		/// </summary>
-		/// <returns></returns>
-		private Team55LMSContext MakeCatalog()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("tiny_catalog").UseApplicationServiceProvider(NewServiceProvider());
-
-			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
-
-			Departments math = new Departments
-			{
-				Name = "Mathematics",
-				SubjectAbbr = "MATH"
-			};
-
-			Departments physics = new Departments
-			{
-				Name = "Physics",
-				SubjectAbbr = "PHYS"
-			};
-
-			Courses calculus = new Courses
-			{
-				CourseId = 2,
-				CourseNumber = 1210,
-				SubjectAbbr = "MATH",
-				Name = "Calculus I"
-			};
-
-			Courses physics2210 = new Courses
-			{
-				CourseId = 3,
-				CourseNumber = 2210,
-				SubjectAbbr = "PHYS",
-				Name = "Physics For Scientists And Engineers I"
-			};
-
-			db.Departments.Add(math);
-			db.Departments.Add(physics);
-			db.Courses.Add(calculus);
-			db.Courses.Add(physics2210);
-			db.SaveChanges();
-
-			return db;
-		}
-
-		/// <summary>
 		/// Helper for configuring a database to have some class offerings
 		/// </summary>
 		/// <returns></returns>
@@ -201,31 +153,6 @@ namespace LMSTester
 		}
 
 		/// <summary>
-		/// Helper for making a professor user in the database
-		/// </summary>
-		/// <returns></returns>
-		private Team55LMSContext MakeProfessorUser()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("professor_user").UseApplicationServiceProvider(NewServiceProvider());
-
-			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
-
-			Professors erinParker = new Professors
-			{
-				FirstName = "Erin",
-				LastName = "Parker",
-				BirthDate = DateTime.Parse("02/02/1996"),
-				UId = "u0000010"
-			};
-
-			db.Professors.Add(erinParker);
-			db.SaveChanges();
-
-			return db;
-		}
-
-		/// <summary>
 		/// Verifies that all of the departments are listed
 		/// </summary>
 		[Fact]
@@ -246,60 +173,6 @@ namespace LMSTester
 			Assert.Equal(2, departmentsQuery.Count());
 		} 
 
-		/// <summary>
-		/// Verifies that all of the catalogs are listed
-		/// </summary>
-		[Fact]
-		public void CanGetCatalog()
-		{
-			CommonController common = new CommonController();
-			Team55LMSContext db = MakeCatalog();
-			common.UseLMSContext(db);
-
-			var getCatalog = common.GetCatalog() as JsonResult;
-			dynamic result = getCatalog.Value;
-
-			String expected = "{ subject = Mathematics, dname = MATH, courses = { number = 1210, cname = Calculus I }, { subject = Physics, dname = PHYS, courses = { number = 2210, cname = Physics For Scientists And Engineers I } }";
-			Assert.Equal(expected, result[0].ToString());
-		}
-
-		/// <summary>
-		/// Verifies that there should not be any class offerings 
-		/// if there aren't any for a given course
-		/// 
-		/// TODO: Find how to compare JSON values in string
-		/// 
-		/// </summary>
-		[Fact]
-		public void NoClassOfferings()
-		{
-			CommonController common = new CommonController();
-			Team55LMSContext db = ConfigureDatabaseNoData();
-			common.UseLMSContext(db);
-
-			var classOfferings = common.GetClassOfferings("CS", 5530) as JsonResult;
-			dynamic result = classOfferings.Value;
-
-			String expected = "{ }";
-
-			Assert.Equal(expected, result.ToString());
-		}
-
-		/// <summary>
-		/// Verifies that all of the class offerings for a class is returned 
-		/// </summary>
-		[Fact]
-		public void CanGetClassOfferings()
-		{
-			CommonController common = new CommonController();
-			Team55LMSContext db = MakeClassOfferings();
-			common.UseLMSContext(db);
-
-			var departments = common.GetClassOfferings("CS", 5530) as JsonResult;
-			dynamic result = departments.Value;
-
-			Assert.Equal("{ }", result.ToString());
-		}
 
 		/// <summary>
 		/// Verifies information retrieved from a student user
@@ -315,22 +188,6 @@ namespace LMSTester
 			dynamic result = studentUser.Value;
 
 			Assert.Equal("{ fname = Tony, lname = Diep, uid = u0000001, department = CS }", result.ToString());
-		}
-
-		/// <summary>
-		/// Verifies information retrieved from a professor user
-		/// </summary>
-		[Fact]
-		public void CanGetProfessorUser()
-		{
-			CommonController common = new CommonController();
-			Team55LMSContext db = MakeProfessorUser();
-			common.UseLMSContext(db);
-
-			var professorUser = common.GetUser("u0000010") as JsonResult;
-			dynamic result = professorUser.Value;
-
-			Assert.Equal("{ fname = Erin, lname = Parker, uid = u0000010, department = CS }", result.ToString());
 		}
 	}
 }

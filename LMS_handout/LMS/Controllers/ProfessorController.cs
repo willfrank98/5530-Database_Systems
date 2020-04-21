@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LMS.Models.LMSModels;
+using System.Globalization;
 
 namespace LMS.Controllers
 {
@@ -325,7 +326,6 @@ namespace LMS.Controllers
 			try
 			{
 				uint aCatID = GetAssignmentCategoryID(category);
-				//AssignmentCategories aCat = GetAssignmentCategory(aCatID);
 
 				Assignments assignment = new Assignments
 				{
@@ -334,7 +334,6 @@ namespace LMS.Controllers
 					DueDate = asgdue,
 					Name = asgname,
 					MaxPoints = (uint)asgpoints,
-					//AssignCat = aCat
 				};
 
 				if (AssignmentAlreadyExists(assignment))
@@ -451,7 +450,6 @@ namespace LMS.Controllers
 				Submission sub = GetSubmission(classID, category, asgname, uid);
 
 				sub.Score = (uint)score;
-				//db.SaveChanges();
 
 				// update student's grade for class
 				var query = from enr in db.Enrolled
@@ -474,6 +472,12 @@ namespace LMS.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Helper for calculating and updating grades accordingly
+		/// </summary>
+		/// <param name="uid"></param>
+		/// <param name="classId"></param>
+		/// <returns></returns>
 		private string UpdateGrade(string uid, uint classId)
 		{
 			// get all assignment categories for a class
@@ -582,11 +586,7 @@ namespace LMS.Controllers
 		/// "season" - The season part of the semester in which the class is taught
 		/// "year" - The year part of the semester in which the class is taught
 		/// </summary>
-		/// <param name="uid">The professor's uid</param>
-		/// 
-		/// NOTE: This method is called when you are logged in as a professor
-		///		  and you click on "My Classes" 
-		/// 
+		/// <param name="uid">The professor's uid</param> 
 		/// <returns>The JSON array</returns>
 		public IActionResult GetMyClasses(string uid)
 		{

@@ -46,182 +46,6 @@ namespace LMSTester
 		}
 
 		/// <summary>
-		/// Makes a database that has some students enrolled in a class 
-		/// that a professor is teaching; the student is in the same major
-		/// as the class's subject abbreviation
-		/// </summary>
-		/// <returns></returns>
-		private Team55LMSContext MakeClassesWithOneStudentSameMajor()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("class_with_one_student_same_major").UseApplicationServiceProvider(NewServiceProvider());
-
-			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
-
-			Courses course = new Courses
-			{
-				CourseId = 0,
-				CourseNumber =  1210,
-				SubjectAbbr = "CHEM", 
-				Name = "Organic Chemistry"
-			};
-
-			Classes chemistry1210 = new Classes
-			{
-				ClassId = 0,
-				CourseId = 0,
-				Semester = "Summer 2020",
-				Location = "CHEM Building 101",
-				Start = TimeSpan.Parse("8:25:00"),
-				End = TimeSpan.Parse("9:30:00"),
-				Professor = "u0000000"
-			};
-
-			Students one = new Students
-			{
-				UId = "u0000001",
-				FirstName = "Tony",
-				LastName = "Diep",
-				BirthDate = DateTime.Parse("02/02/1996"),
-				Major = "CHEM"
-			};
-
-			db.Students.Add(one);
-			db.Courses.Add(course);
-			db.Classes.Add(chemistry1210);
-
-			StudentController studController = new StudentController();
-			studController.Enroll("CHEM", 1210, "Summer", 2020, "u0000001");
-
-			db.SaveChanges();
-
-			return db;
-		}
-
-		/// <summary>
-		/// Makes a database that has some students enrolled in a class 
-		/// that a professor is teaching; the student is in a different major
-		/// than the class's subject abbreviation
-		/// </summary>
-		/// <returns></returns>
-		private Team55LMSContext MakeClassesWithOneStudentDifferentMajor()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("class_with_one_student_diff_major").UseApplicationServiceProvider(NewServiceProvider());
-
-			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
-
-			Courses course = new Courses
-			{
-				CourseId = 0,
-				CourseNumber = 1210,
-				Name = "Organic Chemistry",
-				SubjectAbbr = "CHEM",
-			};
-
-			Classes chemistry1210 = new Classes
-			{
-				ClassId = 0,
-				CourseId = 0,
-				Semester = "Summer 2020",
-				Location = "CHEM Building 101",
-				Start = TimeSpan.Parse("8:25:00"),
-				End = TimeSpan.Parse("9:30:00"),
-				Professor = "u0000000"
-			};
-
-			Students one = new Students
-			{
-				UId = "u0000001",
-				FirstName = "Tony",
-				LastName = "Diep",
-				BirthDate = DateTime.Parse("02/02/1996"),
-				Major = "CS"
-			};
-
-			db.Students.Add(one);
-			db.Courses.Add(course);
-			db.Classes.Add(chemistry1210);
-
-			StudentController studentController = new StudentController();
-			studentController.Enroll("CHEM", 1210, "Summer", 2020, "u0000001");
-
-			db.SaveChanges();
-
-			return db;
-		}
-
-		/// <summary>
-		/// Makes a database that has some students enrolled in a class 
-		/// that a professor is teaching
-		/// </summary>
-		/// <returns></returns>
-		private Team55LMSContext MakeClassesWithAFewStudents()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
-			optionsBuilder.UseInMemoryDatabase("classes_with_few_students").UseApplicationServiceProvider(NewServiceProvider());
-
-			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
-
-			Courses biology = new Courses
-			{
-				CourseId = 0,
-				CourseNumber = 1210,
-				Name = "Intro to Biology",
-				SubjectAbbr = "BIOL"
-			};
-
-			Classes biology1210 = new Classes
-			{
-				ClassId = 0,
-				CourseId = 0, 
-				Semester = "Fall 2020",
-				Location = "WEB L102",
-				Start = TimeSpan.Parse("9:10:00"),
-				End = TimeSpan.Parse("10:30:00"),
-				Professor = "u0000000"
-			};
-
-			Students one = new Students
-			{
-				UId = "u0000001",
-				FirstName = "Tony",
-				LastName = "Diep",
-				BirthDate = DateTime.Parse("02/02/1996"),
-				Major = "BIOL"
-			};
-
-			Students two = new Students
-			{
-				UId = "u0000002",
-				FirstName = "Will",
-				LastName = "Frank",
-				BirthDate = DateTime.Parse("01/01/1998"),
-				Major = "BIOL"
-			};
-
-			Students three = new Students
-			{
-				UId = "u0000003",
-				FirstName = "Jon",
-				LastName = "Pilling",
-				BirthDate = DateTime.Parse("03/01/1995"),
-				Major = "BIOL"
-			};
-
-			db.Students.Add(one);
-			db.Students.Add(two);
-			db.Students.Add(three);
-
-			db.Courses.Add(biology);
-			db.Classes.Add(biology1210);
-
-			db.SaveChanges();
-
-			return db;
-		}
-
-		/// <summary>
 		/// Helper for making one class for one professor
 		/// </summary>
 		/// <returns></returns>
@@ -434,7 +258,7 @@ namespace LMSTester
 
 			Classes calculusIII = new Classes
 			{
-				CourseId = 2,
+				CourseId = course.CourseId,
 				Location = "TBA",
 				Semester = "Summer 2020",
 				Professor = "u0000010",
@@ -528,59 +352,47 @@ namespace LMSTester
 		}
 
 		/// <summary>
-		/// Verifies that a professor is able to get all of the students
-		/// in a class in which they are teaching
+		/// Helper for making a 
 		/// </summary>
-		[Fact]
-		public void CanGetAllStudentsInClassOneStudentSameMajorAsClassSubject()
+		/// <returns></returns>
+		private Team55LMSContext MakeDatabaseWithNoValidAssignmentCategories()
 		{
-			ProfessorController prof = new ProfessorController();
-			Team55LMSContext db = MakeClassesWithOneStudentSameMajor();
-			prof.UseLMSContext(db);
+			var optionsBuilder = new DbContextOptionsBuilder<Team55LMSContext>();
+			optionsBuilder.UseInMemoryDatabase("no_correct_assignment_categories").UseApplicationServiceProvider(NewServiceProvider());
 
-			var allStudents = prof.GetStudentsInClass("CHEM", 1210, "Summer", 2020) as JsonResult;
-			dynamic result = allStudents.Value;
+			Team55LMSContext db = new Team55LMSContext(optionsBuilder.Options);
 
-			Assert.Equal("{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }", result[0].ToString());
-		}
+			Courses course = new Courses
+			{
+				CourseId = 5,
+				CourseNumber = 2210,
+				Name = "Calculus III",
+				SubjectAbbr = "MATH"
+			};
 
-		/// <summary>
-		/// Verifies that a professor is able to get all of the students
-		/// in a class in which they are teaching
-		/// </summary>
-		[Fact]
-		public void CanGetAllStudentsInClassOneStudentDifferentMajorThanClassSubject()
-		{
-			ProfessorController prof = new ProfessorController();
-			Team55LMSContext db = MakeClassesWithOneStudentDifferentMajor();
-			prof.UseLMSContext(db);
+			Classes calculusIII = new Classes
+			{
+				CourseId = 2,
+				Location = "TBA",
+				Semester = "Summer 2020",
+				Professor = "u0000010",
+				Start = TimeSpan.Parse("12:25:00"),
+				End = TimeSpan.Parse("13:10:00"),
+			};
 
-			var allStudents = prof.GetStudentsInClass("CHEM", 1210, "Summer", 2020) as JsonResult;
-			dynamic result = allStudents.Value;
+			Enrolled enr = new Enrolled
+			{
+				ClassId = calculusIII.ClassId,
+				Grade = "--",
+				UId = "u0000002",
+			};
 
-			Assert.Equal("{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }", result.ToString());
-		}
+			db.Courses.Add(course);
+			db.Classes.Add(calculusIII);
+			db.Enrolled.Add(enr);
+			db.SaveChanges();
 
-		/// <summary>
-		/// Verifies that a professor can get a list of all of the 
-		/// students that are in their class
-		/// </summary>
-		[Fact]
-		public void CanGetAllStudentsInClass()
-		{
-			ProfessorController prof = new ProfessorController();
-			Team55LMSContext db = MakeClassesWithAFewStudents();
-			prof.UseLMSContext(db);
-
-			var allStudents = prof.GetStudentsInClass("BIOL", 1210, "Fall", 2020) as JsonResult;
-			dynamic result = allStudents.Value;
-
-			String firstStudent = "{ fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }";
-			Assert.Equal(firstStudent, result[0].ToString());
-
-			//Assert.Equal("{ { fname = Tony, lname = Diep, dob = 02/02/1996, grade = -- }, " +
-			//	"{ fname = Will, lname = Frank, dob = 01/01/1998, grade = -- }, " +
-			//  " { fname = Jon, lname = Pilling, dob = 03/01/1995, grade = -- } }", result.ToString());
+			return db;
 		}
 
 		/// <summary>
@@ -694,6 +506,23 @@ namespace LMSTester
 
 			Assert.Equal("{ success = False }", result.ToString());
 
+		}
+
+		/// <summary>
+		/// Verifes that a professor cannot create an assignment category without any 
+		/// name and weight
+		/// </summary>
+		[Fact]
+		public void CannotCreateAssignmentCategoryWithEmptyNameAndWeight()
+		{
+			ProfessorController prof = new ProfessorController();
+			Team55LMSContext db = MakeDatabaseWithNoValidAssignmentCategories();
+			prof.UseLMSContext(db);
+
+			var empty = prof.CreateAssignmentCategory("MATH", 2210, "Summer", 2020, null, new int()) as JsonResult;
+			dynamic result = empty.Value;
+
+			Assert.Equal("{ success = False }", result.ToString());
 		}
 	}
 }

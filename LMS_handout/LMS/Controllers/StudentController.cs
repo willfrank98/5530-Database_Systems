@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
 using System.Dynamic;
+using System.Globalization;
 
 // For referencing LMSTester
 [assembly: InternalsVisibleTo("LMSTester")]
@@ -237,7 +238,7 @@ namespace LMS.Controllers
 					AssignmentId = assgnId,
 					UId = uid,
 					Contents = contents,
-					Time = DateTime.Now,
+					Time = DateTime.Now
 				};
 
 				// update old submission
