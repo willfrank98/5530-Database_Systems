@@ -125,16 +125,6 @@ namespace LMSTester
 			Team55LMSContext db = MakeTinyCatalog();
 			student.UseLMSContext(db);
 
-			//Classes badwordsClass = new Classes
-			//{
-			//	CourseId = 0,
-			//	Semester = "Fall 2020",
-			//	Location = "LNCO 1104",
-			//	Start = TimeSpan.Parse("10:45:00"),
-			//	End = TimeSpan.Parse("11:35:00"),
-			//	Professor = "u0000002"
-			//};
-
 			var result = student.Enroll("LING", 1069, "Fall", 2020, "u0000003") as JsonResult;
 		
 			Assert.Equal("{ success = True }", result.Value.ToString());

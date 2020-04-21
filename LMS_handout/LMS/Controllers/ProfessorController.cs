@@ -290,7 +290,7 @@ namespace LMS.Controllers
 					Weight = (uint)catweight
 				};
 
-				if (AssignmentCategoryExists(aCat))
+				if (AssignmentCategoryExists(aCat, classIDForAsnCat))
 				{
 					return Json(new { success = false });
 				}
@@ -620,13 +620,22 @@ namespace LMS.Controllers
 		/// </summary>
 		/// <param name="category"></param>
 		/// <returns></returns>
-		private bool AssignmentCategoryExists(AssignmentCategories category)
+		private bool AssignmentCategoryExists(AssignmentCategories category, uint classID)
 		{
-			var categories = from cat in db.AssignmentCategories
-							 where cat.Name == category.Name
-							 select cat;
+			var allCategories = from cla in db.Classes
+								join cat in db.AssignmentCategories on cla.ClassId equals cat.ClassId
+								into categories
+								from ca in categories.DefaultIfEmpty()
+								where ca.Name == category.Name
+								where cla.ClassId == classID
+								select ca;
 
-			foreach (AssignmentCategories c in categories)
+
+			//var categories = from cat in db.AssignmentCategories
+			//				 where cat.Name == category.Name
+			//				 select cat;
+
+			foreach (AssignmentCategories c in allCategories)
 			{
 				if (c.Name.ToLower() == category.Name.ToLower())
 				{
