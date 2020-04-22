@@ -48,7 +48,7 @@
             "Microsoft.AspNetCore.App": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.2.0, )",
+              "version": "[2.2.8, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Test.Sdk": {
@@ -58,7 +58,7 @@
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.2.0, )",
+              "version": "[2.2.8, )",
               "autoReferenced": true
             },
             "xunit": {
@@ -81,6 +81,11 @@
           "assetTargetFallback": true,
           "warn": true,
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.101\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     },
@@ -124,7 +129,7 @@
             "Microsoft.AspNetCore.App": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.2.0, )",
+              "version": "[2.2.8, )",
               "autoReferenced": true
             },
             "Microsoft.AspNetCore.Razor.Design": {
@@ -135,7 +140,7 @@
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.2.0, )",
+              "version": "[2.2.8, )",
               "autoReferenced": true
             },
             "Newtonsoft.Json": {
@@ -158,6 +163,11 @@
           "assetTargetFallback": true,
           "warn": true,
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.101\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }
