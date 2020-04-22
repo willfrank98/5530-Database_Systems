@@ -89,8 +89,7 @@ namespace LMS.Controllers
 		}
 		catch(Exception e)
 		{
-			Console.WriteLine(e.Message);
-			return Json(null);
+			return Json(e.Message);
 		}
     }
 
@@ -179,9 +178,8 @@ namespace LMS.Controllers
 
 			return Json(new { success = true });
 		}
-		catch(Exception e)
+		catch(Exception)
 		{
-			Console.WriteLine(e.Message);
 			return Json(new { success = false });
 		}
 	}

@@ -108,8 +108,7 @@ namespace LMS.Controllers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
-				return Json("");
+				return Json(e.Message);
 			}
 		}
 
@@ -156,8 +155,7 @@ namespace LMS.Controllers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
-				return Json(null);
+				return Json(e.Message);
 			}
 		}
 
@@ -247,7 +245,7 @@ namespace LMS.Controllers
 					return Content(submissionText.First().submission);
 				}
 
-				return Content("No Submission Found");
+				return Content("");
 			}
 			catch (Exception e)
 			{

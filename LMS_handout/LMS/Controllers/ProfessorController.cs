@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LMS.Models.LMSModels;
-using System.Globalization;
 
 namespace LMS.Controllers
 {
@@ -135,8 +134,7 @@ namespace LMS.Controllers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
-				return Json(null);
+				return Json(e.Message);
 			}
 		}
 
@@ -220,8 +218,7 @@ namespace LMS.Controllers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
-				return Json(null);
+				return Json(e.Message);
 			}
 		}
 
@@ -300,9 +297,8 @@ namespace LMS.Controllers
 
 				return Json(new { success = true });
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				Console.WriteLine(e.Message);
 				return Json(new { success = false });
 			}
 		}
@@ -359,9 +355,8 @@ namespace LMS.Controllers
 
 				return Json(new { success = true });
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				Console.WriteLine(e.Message);
 				return Json(new { success = false });
 			}
 		}
@@ -423,8 +418,7 @@ namespace LMS.Controllers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
-				return Json(null);
+				return Json(e.Message);
 			}
 		}
 
@@ -465,9 +459,8 @@ namespace LMS.Controllers
 
 				return Json(new { success = true });
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				Console.WriteLine(e.Message);
 				return Json(new { success = false });
 			}
 		}
@@ -629,11 +622,6 @@ namespace LMS.Controllers
 								where ca.Name == category.Name
 								where cla.ClassId == classID
 								select ca;
-
-
-			//var categories = from cat in db.AssignmentCategories
-			//				 where cat.Name == category.Name
-			//				 select cat;
 
 			foreach (AssignmentCategories c in allCategories)
 			{
